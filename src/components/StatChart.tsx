@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import {
     LineChart,
     Line,
@@ -6,8 +6,7 @@ import {
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer,
-    Legend
+    ResponsiveContainer
 } from 'recharts';
 import { format, parseISO, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
 import { CombinedData, GroupBy } from '../App';
@@ -91,6 +90,28 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
         );
     }
 
+    const chartContainerRef = useRef<HTMLDivElement>(null);
+    const [chartWidth, setChartWidth] = useState<number>(0);
+
+    useEffect(() => {
+        if (!chartContainerRef.current) return;
+        const observer = new ResizeObserver((entries) => {
+            if (entries[0]) {
+                setChartWidth(entries[0].contentRect.width);
+            }
+        });
+        observer.observe(chartContainerRef.current);
+        return () => observer.disconnect();
+    }, []);
+
+    const showDots = useMemo(() => {
+        if (!chartWidth || chartData.length <= 1) return true;
+        // Plot width is approx total width minus left/right margins (20) and YAxis width (60)
+        const plotWidth = chartWidth - 80;
+        const distance = plotWidth / chartData.length;
+        return distance >= 8;
+    }, [chartWidth, chartData.length]);
+
     const formatNumber = (num: number) => {
         return new Intl.NumberFormat('en-US').format(num);
     };
@@ -122,11 +143,8 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
                 <div className="stat-summary" style={{ flex: 1, minWidth: '150px' }}>
                     <span className="stat-label">Grouped By {groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</span>
                 </div>
-                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: '200px' }}>
-                    <Legend wrapperStyle={{ position: 'relative', top: 0 }} />
-                </div>
                 <div style={{ display: 'flex', gap: '1.5rem', flex: 2, justifyContent: 'flex-end', textAlign: 'right', flexWrap: 'wrap' }}>
-                    {visiblePackages.map((pkg) => {
+                    {[...visiblePackages].sort((a, b) => (packageTotals[b.id] || 0) - (packageTotals[a.id] || 0)).map((pkg) => {
                         const originalIndex = packages.findIndex(p => p.id === pkg.id);
                         const color = packageColors[originalIndex % packageColors.length];
                         return (
@@ -141,7 +159,7 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
 
             {/* Need wrapper div to constrain responsive container explicitly */}
             <div className="chart-container" style={{ width: '100%', height: '400px', position: 'relative' }}>
-                <div style={{ width: '100%', height: '400px', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                <div style={{ width: '100%', height: '400px', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} ref={chartContainerRef}>
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart
                             data={chartData}
@@ -178,7 +196,7 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
                                         name={pkg.name}
                                         stroke={color}
                                         strokeWidth={1}
-                                        dot={{ r: 2, fill: "var(--card-bg)", stroke: color, strokeWidth: 1 }}
+                                        dot={showDots ? { r: 2, fill: "var(--card-bg)", stroke: color, strokeWidth: 1 } : false}
                                         activeDot={{ r: 4, fill: color, stroke: "var(--text-primary)", strokeWidth: 1 }}
                                     />
                                 )

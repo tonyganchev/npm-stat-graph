@@ -69,23 +69,20 @@ export async function fetchPackageStats(
   const encodedPackageName = encodeURIComponent(packageName);
   const baseUrl = import.meta.env?.DEV ? '/api/npm' : 'https://api.npmjs.org';
 
-  // Npm API strictly limits ranges to 18-months jumps.
-  const MAX_DAYS = 540;
-  let dStart = new Date(exactStart);
-  const dEnd = new Date(exactEnd);
+  // Splitting by calendar year instead of arbitrary 540-day chunks maximizes cache hits,
+  // since past full years (Jan 1 to Dec 31) are permanently cacheable.
+  const startYear = parseInt(exactStart.substring(0, 4), 10);
+  const endYear = parseInt(exactEnd.substring(0, 4), 10);
   const intervals: { start: string, end: string }[] = [];
 
-  while (dStart <= dEnd) {
-    const chunkEnd = new Date(dStart);
-    chunkEnd.setDate(chunkEnd.getDate() + MAX_DAYS);
-    if (chunkEnd >= dEnd) {
-      intervals.push({ start: format(dStart, 'yyyy-MM-dd'), end: format(dEnd, 'yyyy-MM-dd') });
-      break;
-    } else {
-      intervals.push({ start: format(dStart, 'yyyy-MM-dd'), end: format(chunkEnd, 'yyyy-MM-dd') });
-      dStart = new Date(chunkEnd);
-      dStart.setDate(dStart.getDate() + 1);
-    }
+  for (let y = startYear; y <= endYear; y++) {
+    const isFirstYear = y === startYear;
+    const isLastYear = y === endYear;
+
+    const start = isFirstYear ? exactStart : `${y}-01-01`;
+    const end = isLastYear ? exactEnd : `${y}-12-31`;
+
+    intervals.push({ start, end });
   }
 
   const allDownloads: DownloadStat[] = [];

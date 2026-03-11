@@ -71,7 +71,7 @@ function App() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const handleSearch = useCallback(async () => {
+    const handleSearch = useCallback(async (overrides?: { range?: DateRangeType, customStart?: string, customEnd?: string }) => {
         setIsLoading(true);
         setError(null);
         try {
@@ -82,22 +82,26 @@ function App() {
                 return;
             }
 
+            const searchRange = overrides?.range || range;
+            const searchStart = overrides?.customStart !== undefined ? overrides.customStart : customStart;
+            const searchEnd = overrides?.customEnd !== undefined ? overrides.customEnd : customEnd;
+
             // Sync URL and LocalStorage
-            const state = { packages, range, customStart, customEnd };
+            const state = { packages, range: searchRange, customStart: searchStart, customEnd: searchEnd };
             localStorage.setItem('npm-stats-state', JSON.stringify(state));
             const url = new URL(window.location.href);
             url.searchParams.set('packages', encodeURIComponent(JSON.stringify(packages)));
-            url.searchParams.set('range', range);
-            if (range === 'custom') {
-                url.searchParams.set('customStart', customStart);
-                url.searchParams.set('customEnd', customEnd);
+            url.searchParams.set('range', searchRange);
+            if (searchRange === 'custom') {
+                url.searchParams.set('customStart', searchStart);
+                url.searchParams.set('customEnd', searchEnd);
             } else {
                 url.searchParams.delete('customStart');
                 url.searchParams.delete('customEnd');
             }
             window.history.replaceState({}, '', url.toString());
 
-            const statsPromises = activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), range, customStart, customEnd));
+            const statsPromises = activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
             const results = await Promise.all(statsPromises);
 
             // Merge all results into CombinedData mapped by day

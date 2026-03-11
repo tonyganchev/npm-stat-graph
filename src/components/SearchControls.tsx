@@ -13,7 +13,7 @@ interface SearchControlsProps {
     setCustomStart: (val: string) => void;
     customEnd: string;
     setCustomEnd: (val: string) => void;
-    onSearch: () => void;
+    onSearch: (overrides?: { range?: DateRangeType, customStart?: string, customEnd?: string }) => void;
     isLoading: boolean;
 }
 
@@ -32,7 +32,7 @@ export const SearchControls: React.FC<SearchControlsProps> = ({
             const { start, end } = calculateDateRange(newRange);
             setCustomStart(start);
             setCustomEnd(end);
-            setTimeout(() => onSearch(), 0);
+            onSearch({ range: newRange, customStart: start, customEnd: end });
         }
     };
 

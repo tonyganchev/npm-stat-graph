@@ -18,10 +18,16 @@ export default defineConfig({
                         const targetUrl = `https://api.npmjs.org${urlPath}`;
 
                         if (apiCache.has(targetUrl)) {
-                            console.log(`[Dev Cache Hit] ${targetUrl}`);
-                            res.setHeader('Content-Type', 'application/json');
-                            res.end(apiCache.get(targetUrl));
-                            return;
+                            const cached = apiCache.get(targetUrl);
+                            if (Date.now() - cached.timestamp <= 10 * 60 * 1000) {
+                                console.log(`[Dev Cache Hit] ${targetUrl}`);
+                                res.setHeader('Content-Type', 'application/json');
+                                res.end(cached.data);
+                                return;
+                            } else {
+                                console.log(`[Dev Cache Expired] ${targetUrl}`);
+                                apiCache.delete(targetUrl);
+                            }
                         }
 
                         console.log(`[Dev Cache Miss] Fetching ${targetUrl}`);
@@ -34,7 +40,7 @@ export default defineConfig({
                         }
 
                         const data = await fetchRes.text();
-                        apiCache.set(targetUrl, data);
+                        apiCache.set(targetUrl, { data, timestamp: Date.now() });
 
                         res.setHeader('Content-Type', 'application/json');
                         res.end(data);
