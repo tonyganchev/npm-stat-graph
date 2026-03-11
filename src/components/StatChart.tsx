@@ -140,7 +140,7 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
     return (
         <div className="glass-panel chart-section" style={{ height: '550px', minHeight: '550px' }}>
             <div className="chart-header" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
-                <div className="stat-summary" style={{ flex: 1, minWidth: '150px' }}>
+                <div className="stat-summary" style={{ minWidth: '150px' }}>
                     <span className="stat-label">Grouped By {groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '1.5rem', flex: 2, justifyContent: 'flex-end', textAlign: 'right', flexWrap: 'wrap' }}>
@@ -150,7 +150,7 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
                         return (
                             <div className="stat-summary" key={pkg.id}>
                                 <span className="stat-label" style={{ color }}>{pkg.name}</span>
-                                <span className="stat-value" style={{ fontSize: '1.25rem' }}>{formatNumber(packageTotals[pkg.id])}</span>
+                                <span className="stat-value">{formatNumber(packageTotals[pkg.id])}</span>
                             </div>
                         );
                     })}

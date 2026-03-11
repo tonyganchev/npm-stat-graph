@@ -11,6 +11,7 @@ export interface NpmStatsResponse {
   end: string;
   package: string;
   downloads: DownloadStat[];
+  error?: string;
 }
 
 export type DateRangeType = "last-7-days" | "last-30-days" | "last-quarter" | "last-6-months" | "last-year" | "last-2-years" | "last-5-years" | "last-10-years" | "ytd" | "mtd" | "wtd" | "custom";
@@ -86,34 +87,33 @@ export async function fetchPackageStats(
   }
 
   const allDownloads: DownloadStat[] = [];
+  let fetchError: string | undefined = undefined;
 
   for (const interval of intervals) {
     const url = `${baseUrl}/downloads/range/${interval.start}:${interval.end}/${encodedPackageName}`;
-    const response = await fetch(url);
+    try {
+      const response = await fetch(url);
 
-    if (response.ok) {
-      const data: NpmStatsResponse = await response.json();
-      if (data && data.downloads) {
-        allDownloads.push(...data.downloads);
+      if (response.ok) {
+        const data: NpmStatsResponse = await response.json();
+        if (data && data.downloads) {
+          allDownloads.push(...data.downloads);
+        }
+      } else if (response.status === 404) {
+        // If historical chunk 404s, it might mean the package didn't exist yet, we just gracefully continue.
+      } else {
+        fetchError = `Failed to fetch interval ${interval.start} to ${interval.end}: HTTP ${response.status}`;
       }
-    } else if (response.status === 404) {
-      if (intervals.length === 1) {
-        throw new Error(`Package "${packageName}" not found or has no data.`);
-      }
-      // If historical chunk 404s, it might mean the package didn't exist yet, we just gracefully continue.
-    } else {
-      throw new Error(`Failed to fetch downloads data: ${response.statusText}`);
+    } catch (err: any) {
+      fetchError = `Failed to fetch interval ${interval.start} to ${interval.end}: ${err.message || String(err)}`;
     }
-  }
-
-  if (allDownloads.length === 0) {
-    throw new Error(`Package "${packageName}" not found or has no data.`);
   }
 
   return {
     start: exactStart,
     end: exactEnd,
     package: packageName,
-    downloads: allDownloads
+    downloads: allDownloads,
+    error: fetchError
   };
 }

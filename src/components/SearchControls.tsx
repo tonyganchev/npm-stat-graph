@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, Loader2, Plus, Eye, EyeOff, X, ArrowUp, ArrowDown } from 'lucide-react';
+import { Search, Loader2, Plus, Eye, EyeOff, X, ArrowUpDown } from 'lucide-react';
 import { DateRangeType, calculateDateRange } from '../api/npmApi';
 import { PackageConfig, packageColors } from '../utils';
 import { AutocompleteInput } from './AutocompleteInput';
@@ -20,6 +20,8 @@ interface SearchControlsProps {
 export const SearchControls: React.FC<SearchControlsProps> = ({
     packages, setPackages, range, setRange, customStart, setCustomStart, customEnd, setCustomEnd, onSearch, isLoading
 }) => {
+    const [hoveredSwapIndex, setHoveredSwapIndex] = React.useState<number | null>(null);
+
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
         onSearch();
@@ -74,8 +76,22 @@ export const SearchControls: React.FC<SearchControlsProps> = ({
             <form onSubmit={handleSubmit} className="input-group" style={{ flexDirection: 'column', gap: '1rem' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
                     {packages.map((pkg, i) => (
-                        <div key={pkg.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%' }}>
-                            <div style={{ width: '4px', height: '100%', minHeight: '36px', background: packageColors[i % packageColors.length], borderRadius: '2px' }} />
+                        <div key={pkg.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%', position: 'relative' }}>
+                            {i < packages.length - 1 && (
+                                <div style={{
+                                    position: 'absolute',
+                                    bottom: '-0.25rem',
+                                    left: '0',
+                                    right: '0',
+                                    height: '2px',
+                                    backgroundColor: hoveredSwapIndex === i ? 'var(--primary-color)' : 'transparent',
+                                    transition: 'background-color 0.2s',
+                                    zIndex: 0,
+                                    pointerEvents: 'none',
+                                    transform: 'translateY(50%)'
+                                }} />
+                            )}
+                            <div style={{ zIndex: 1, width: '4px', height: '100%', minHeight: '36px', background: packageColors[i % packageColors.length], borderRadius: '2px' }} />
 
                             <AutocompleteInput
                                 value={pkg.name}
@@ -89,21 +105,35 @@ export const SearchControls: React.FC<SearchControlsProps> = ({
                                 }}
                             />
 
-                            <button type="button" className="btn-icon" onClick={() => toggleVisibility(i)} title="Toggle Visibility" style={{ background: 'transparent', border: 'none', color: 'var(--text-secondary)', cursor: 'pointer', padding: '0.5rem' }}>
+                            <button type="button" className="btn-icon" onClick={() => toggleVisibility(i)} title="Toggle Visibility">
                                 {pkg.visible ? <Eye size={20} /> : <EyeOff size={20} />}
                             </button>
 
-                            <button type="button" className="btn-icon" onClick={() => movePackage(i, -1)} disabled={i === 0} style={{ background: 'transparent', border: 'none', color: i === 0 ? 'rgba(255,255,255,0.1)' : 'var(--text-secondary)', cursor: i === 0 ? 'default' : 'pointer', padding: '0.25rem' }}>
-                                <ArrowUp size={16} />
-                            </button>
-
-                            <button type="button" className="btn-icon" onClick={() => movePackage(i, 1)} disabled={i === packages.length - 1} style={{ background: 'transparent', border: 'none', color: i === packages.length - 1 ? 'rgba(255,255,255,0.1)' : 'var(--text-secondary)', cursor: i === packages.length - 1 ? 'default' : 'pointer', padding: '0.25rem' }}>
-                                <ArrowDown size={16} />
-                            </button>
-
-                            <button type="button" className="btn-icon" onClick={() => removePackage(i)} style={{ background: 'transparent', border: 'none', color: 'var(--error-color)', cursor: 'pointer', padding: '0.5rem' }}>
+                            <button type="button" className="btn-icon error" onClick={() => removePackage(i)} title="Remove Package">
                                 <X size={20} />
                             </button>
+
+                            <div style={{ width: '2rem', display: 'flex', justifyContent: 'center', position: 'relative', alignSelf: 'stretch' }}>
+                                {i < packages.length - 1 && (
+                                    <button
+                                        type="button"
+                                        className="btn-icon swap-btn"
+                                        onMouseEnter={() => setHoveredSwapIndex(i)}
+                                        onMouseLeave={() => setHoveredSwapIndex(null)}
+                                        onClick={() => movePackage(i, 1)}
+                                        style={{
+                                            position: 'absolute',
+                                            top: '100%',
+                                            marginTop: '0.25rem',
+                                            transform: 'translateY(-50%)',
+                                            zIndex: 10,
+                                        }}
+                                        title="Swap with below"
+                                    >
+                                        <ArrowUpDown size={14} />
+                                    </button>
+                                )}
+                            </div>
                         </div>
                     ))}
                 </div>
