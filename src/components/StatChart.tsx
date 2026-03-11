@@ -1,42 +1,91 @@
 import React, { useMemo } from 'react';
 import {
-    AreaChart,
-    Area,
+    LineChart,
+    Line,
     XAxis,
     YAxis,
     CartesianGrid,
     Tooltip,
-    ResponsiveContainer
+    ResponsiveContainer,
+    Legend
 } from 'recharts';
-import { format, parseISO } from 'date-fns';
-import { DownloadStat } from '../api/npmApi';
+import { format, parseISO, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
+import { CombinedData, GroupBy } from '../App';
 import { Activity } from 'lucide-react';
+import { PackageConfig, packageColors } from '../utils';
 
 interface StatChartProps {
-    data: DownloadStat[];
-    packageName: string;
+    data: CombinedData[];
+    packages: PackageConfig[];
+    visiblePackages: PackageConfig[];
+    groupBy?: GroupBy;
 }
 
-export const StatChart: React.FC<StatChartProps> = ({ data, packageName }) => {
+export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePackages, groupBy = "day" }) => {
+    // Process and Group Data
     const chartData = useMemo(() => {
-        return data.map(item => ({
-            ...item,
-            // Create a nice formatted date for tooltips and axis
-            formattedDate: format(parseISO(item.day), 'MMM d, yyyy'),
-            shortDate: format(parseISO(item.day), 'MMM d')
-        }));
-    }, [data]);
+        if (!data || data.length === 0) return [];
 
-    const totalDownloads = useMemo(() => {
-        return data.reduce((sum, item) => sum + item.downloads, 0);
-    }, [data]);
+        const groupedMap = new Map<string, { day: string, formattedDate: string, shortDate: string, [pkgId: string]: any }>();
 
-    if (!data || data.length === 0) {
+        data.forEach(item => {
+            const dateObj = parseISO(item.day);
+            let groupStart = dateObj;
+            let fmt = 'MMM d, yyyy';
+            let shortFmt = 'MMM d';
+
+            if (groupBy === 'week') {
+                groupStart = startOfWeek(dateObj);
+                fmt = "'Week of' MMM d, yyyy";
+            } else if (groupBy === 'month') {
+                groupStart = startOfMonth(dateObj);
+                fmt = "MMMM yyyy";
+                shortFmt = "MMM yyyy";
+            } else if (groupBy === 'year') {
+                groupStart = startOfYear(dateObj);
+                fmt = "yyyy";
+                shortFmt = "yyyy";
+            }
+
+            const key = groupStart.toISOString();
+
+            if (!groupedMap.has(key)) {
+                groupedMap.set(key, {
+                    day: key,
+                    formattedDate: format(groupStart, fmt),
+                    shortDate: format(groupStart, shortFmt)
+                });
+                packages.forEach(p => groupedMap.get(key)![p.id] = 0);
+            }
+
+            const current = groupedMap.get(key)!;
+            packages.forEach(p => {
+                if (item.packages[p.id]) {
+                    current[p.id] += item.packages[p.id];
+                }
+            });
+        });
+
+        return Array.from(groupedMap.values()).sort((a, b) => a.day.localeCompare(b.day));
+    }, [data, groupBy, packages]);
+
+    const packageTotals = useMemo(() => {
+        const totals: { [id: string]: number } = {};
+        packages.forEach(p => totals[p.id] = 0);
+        chartData.forEach(item => {
+            packages.forEach(p => {
+                totals[p.id] += item[p.id] || 0;
+            });
+        });
+        return totals;
+    }, [chartData, packages]);
+
+    if (!chartData || chartData.length === 0 || visiblePackages.length === 0) {
         return (
             <div className="glass-panel chart-section">
                 <div className="state-container">
                     <Activity className="state-icon" />
-                    <p>No data available to display.</p>
+                    <p>No active data available to display.</p>
                 </div>
             </div>
         );
@@ -48,12 +97,19 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packageName }) => {
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
+            // Sort payloads by value descending
+            const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
+
             return (
                 <div className="custom-tooltip">
                     <p className="custom-tooltip-label">{payload[0].payload.formattedDate}</p>
-                    <p style={{ color: "var(--primary-color)", fontWeight: "bold", margin: 0 }}>
-                        {formatNumber(payload[0].value)} downloads
-                    </p>
+                    {sortedPayload.map((entry: any, index: number) => {
+                        return (
+                            <p key={index} style={{ color: entry.color, fontWeight: "bold", margin: 0, marginTop: index > 0 ? '0.25rem' : 0 }}>
+                                {entry.name}: <span style={{ color: "white" }}>{formatNumber(entry.value)}</span>
+                            </p>
+                        );
+                    })}
                 </div>
             );
         }
@@ -61,62 +117,75 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packageName }) => {
     };
 
     return (
-        <div className="glass-panel chart-section">
-            <div className="chart-header">
-                <div className="stat-summary">
-                    <span className="stat-label">Total Downloads ({data.length} days)</span>
-                    <span className="stat-value">{formatNumber(totalDownloads)}</span>
+        <div className="glass-panel chart-section" style={{ height: '550px', minHeight: '550px' }}>
+            <div className="chart-header" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+                <div className="stat-summary" style={{ flex: 1, minWidth: '150px' }}>
+                    <span className="stat-label">Grouped By {groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</span>
                 </div>
-                <div className="stat-summary" style={{ textAlign: 'right' }}>
-                    <span className="stat-label">Package</span>
-                    <span className="stat-value" style={{ fontSize: '1.5rem', color: 'var(--accent-color)' }}>
-                        {packageName}
-                    </span>
+                <div style={{ flex: 1, display: 'flex', justifyContent: 'center', minWidth: '200px' }}>
+                    <Legend wrapperStyle={{ position: 'relative', top: 0 }} />
+                </div>
+                <div style={{ display: 'flex', gap: '1.5rem', flex: 2, justifyContent: 'flex-end', textAlign: 'right', flexWrap: 'wrap' }}>
+                    {visiblePackages.map((pkg) => {
+                        const originalIndex = packages.findIndex(p => p.id === pkg.id);
+                        const color = packageColors[originalIndex % packageColors.length];
+                        return (
+                            <div className="stat-summary" key={pkg.id}>
+                                <span className="stat-label" style={{ color }}>{pkg.name}</span>
+                                <span className="stat-value" style={{ fontSize: '1.25rem' }}>{formatNumber(packageTotals[pkg.id])}</span>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
 
-            <div className="chart-container">
-                <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart
-                        data={chartData}
-                        margin={{ top: 10, right: 10, left: 0, bottom: 0 }}
-                    >
-                        <defs>
-                            <linearGradient id="colorDownloads" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="var(--primary-color)" stopOpacity={0.8} />
-                                <stop offset="95%" stopColor="var(--primary-color)" stopOpacity={0} />
-                            </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
-                        <XAxis
-                            dataKey="shortDate"
-                            stroke="var(--text-secondary)"
-                            tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                            tickMargin={10}
-                            minTickGap={30}
-                        />
-                        <YAxis
-                            stroke="var(--text-secondary)"
-                            tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                            tickFormatter={(value) => {
-                                if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-                                if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
-                                return value;
-                            }}
-                            width={60}
-                        />
-                        <Tooltip content={<CustomTooltip />} />
-                        <Area
-                            type="monotone"
-                            dataKey="downloads"
-                            stroke="var(--primary-color)"
-                            strokeWidth={3}
-                            fillOpacity={1}
-                            fill="url(#colorDownloads)"
-                            activeDot={{ r: 6, fill: "var(--accent-color)", stroke: "var(--text-primary)", strokeWidth: 2 }}
-                        />
-                    </AreaChart>
-                </ResponsiveContainer>
+            {/* Need wrapper div to constrain responsive container explicitly */}
+            <div className="chart-container" style={{ width: '100%', height: '400px', position: 'relative' }}>
+                <div style={{ width: '100%', height: '400px', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                        <LineChart
+                            data={chartData}
+                            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                        >
+                            <CartesianGrid strokeDasharray="3 3" stroke="var(--card-border)" vertical={false} />
+                            <XAxis
+                                dataKey="shortDate"
+                                stroke="var(--text-secondary)"
+                                tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                                tickMargin={10}
+                                minTickGap={30}
+                            />
+                            <YAxis
+                                stroke="var(--text-secondary)"
+                                tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                                tickFormatter={(value) => {
+                                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                                    if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+                                    return value;
+                                }}
+                                width={60}
+                            />
+                            <Tooltip content={<CustomTooltip />} />
+
+                            {visiblePackages.map((pkg) => {
+                                const originalIndex = packages.findIndex(p => p.id === pkg.id);
+                                const color = packageColors[originalIndex % packageColors.length];
+                                return (
+                                    <Line
+                                        key={pkg.id}
+                                        type="monotone"
+                                        dataKey={pkg.id}
+                                        name={pkg.name}
+                                        stroke={color}
+                                        strokeWidth={1}
+                                        dot={{ r: 2, fill: "var(--card-bg)", stroke: color, strokeWidth: 1 }}
+                                        activeDot={{ r: 4, fill: color, stroke: "var(--text-primary)", strokeWidth: 1 }}
+                                    />
+                                )
+                            })}
+                        </LineChart>
+                    </ResponsiveContainer>
+                </div>
             </div>
         </div>
     );
