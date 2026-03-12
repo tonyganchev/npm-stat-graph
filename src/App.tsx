@@ -2,6 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { TrendingUp, AlertCircle } from 'lucide-react';
 import { SearchControls } from './components/SearchControls';
 import { StatChart } from './components/StatChart';
+import { DayFilter } from './components/DayFilter';
 import { fetchPackageStats, DateRangeType, calculateDateRange } from './api/npmApi';
 import { defaultPackage, PackageConfig } from './utils';
 
@@ -20,12 +21,25 @@ const loadInitialState = () => {
     const rangeParam = params.get('range') as DateRangeType;
     const customStartParam = params.get('customStart') || '';
     const customEndParam = params.get('customEnd') || '';
+    const daysParam = params.get('days');
 
     if (pkgsStr) {
         try {
             const pkgs = JSON.parse(decodeURIComponent(pkgsStr));
+            let days = [0, 1, 2, 3, 4, 5, 6];
+            if (daysParam) {
+                try {
+                    days = JSON.parse(decodeURIComponent(daysParam));
+                } catch (e) { }
+            }
             if (pkgs.length > 0) {
-                parsedState = { packages: pkgs, range: rangeParam || 'last-30-days', customStart: customStartParam, customEnd: customEndParam };
+                parsedState = { 
+                    packages: pkgs, 
+                    range: rangeParam || 'last-30-days', 
+                    customStart: customStartParam, 
+                    customEnd: customEndParam,
+                    enabledDays: days || [0, 1, 2, 3, 4, 5, 6]
+                };
             }
         } catch (e) { }
     }
@@ -47,7 +61,8 @@ const loadInitialState = () => {
             packages: [{ id: '1', name: defaultPackage, visible: true }],
             range: 'last-30-days',
             customStart: '',
-            customEnd: ''
+            customEnd: '',
+            enabledDays: [0, 1, 2, 3, 4, 5, 6]
         };
     }
 
@@ -66,6 +81,7 @@ function App() {
     const [range, setRange] = useState<DateRangeType>(initialState.range);
     const [customStart, setCustomStart] = useState<string>(initialState.customStart);
     const [customEnd, setCustomEnd] = useState<string>(initialState.customEnd);
+    const [enabledDays, setEnabledDays] = useState<number[]>(initialState.enabledDays || [0, 1, 2, 3, 4, 5, 6]);
 
     const [data, setData] = useState<CombinedData[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -101,6 +117,7 @@ function App() {
                 url.searchParams.delete('customStart');
                 url.searchParams.delete('customEnd');
             }
+            url.searchParams.set('days', encodeURIComponent(JSON.stringify(enabledDays)));
             window.history.replaceState({}, '', url.toString());
 
             const statsPromises = activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
@@ -112,11 +129,11 @@ function App() {
 
             results.forEach((res, index) => {
                 const pkgConfigId = activePkgs[index].id;
-                
+
                 if (res.error) {
                     extractedErrors.push(`[${res.package}] ${res.error}`);
                 }
-                
+
                 res.downloads.forEach(d => {
                     if (!dayMap.has(d.day)) {
                         dayMap.set(d.day, {});
@@ -140,7 +157,18 @@ function App() {
         } finally {
             setIsLoading(false);
         }
-    }, [packages, range, customStart, customEnd]);
+    }, [packages, range, customStart, customEnd, enabledDays]);
+
+    // Independent sync for enabledDays since it doesn't trigger a new fetch
+    useEffect(() => {
+        const state = JSON.parse(localStorage.getItem('npm-stats-state') || '{}');
+        state.enabledDays = enabledDays;
+        localStorage.setItem('npm-stats-state', JSON.stringify(state));
+
+        const url = new URL(window.location.href);
+        url.searchParams.set('days', encodeURIComponent(JSON.stringify(enabledDays)));
+        window.history.replaceState({}, '', url.toString());
+    }, [enabledDays]);
 
     // Initial search only once
     useEffect(() => {
@@ -173,6 +201,11 @@ function App() {
                     isLoading={isLoading}
                 />
 
+                <DayFilter 
+                    enabledDays={enabledDays}
+                    setEnabledDays={setEnabledDays}
+                />
+
                 {error && (
                     <div className="glass-panel state-container">
                         <AlertCircle className="state-icon" style={{ color: 'var(--error-color)', opacity: 1 }} />
@@ -196,10 +229,10 @@ function App() {
 
                 {!error && data && data.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="day" />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="week" />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="month" />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="year" />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="day" enabledDays={enabledDays} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="week" enabledDays={enabledDays} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="month" enabledDays={enabledDays} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="year" enabledDays={enabledDays} />
                     </div>
                 )}
             </main>

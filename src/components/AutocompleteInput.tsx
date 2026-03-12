@@ -31,7 +31,9 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
             }
 
             try {
-                const res = await fetch(`https://registry.npmjs.org/-/v1/search?text=${encodeURIComponent(value)}&size=5`);
+                // Use dev proxy for search requests to enable caching
+                const baseUrl = import.meta.env?.DEV ? '/api/search' : 'https://registry.npmjs.org/-/v1/search';
+                const res = await fetch(`${baseUrl}?text=${encodeURIComponent(value)}&size=5`);
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.objects) {
@@ -50,7 +52,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
     }, [value]);
 
     return (
-        <div ref={wrapperRef} style={{ position: 'relative', flex: 1, minWidth: '200px' }}>
+        <div ref={wrapperRef} className="autocomplete-wrapper">
             <input
                 type="text"
                 className="input"
@@ -67,20 +69,11 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
                 }}
             />
             {showSuggestions && suggestions.length > 0 && (
-                <div style={{
-                    position: 'absolute', top: '100%', left: 0, right: 0, zIndex: 10,
-                    background: 'var(--card-bg)', border: '1px solid var(--card-border)',
-                    borderRadius: '0.5rem', marginTop: '0.25rem', overflow: 'hidden', backdropFilter: 'blur(12px)'
-                }}>
+                <div className="autocomplete-dropdown">
                     {suggestions.map((s, i) => (
                         <div
                             key={i}
-                            style={{
-                                padding: '0.5rem 1rem', cursor: 'pointer', color: 'var(--text-primary)',
-                                background: 'transparent'
-                            }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                            className="autocomplete-item"
                             onClick={() => {
                                 onChange(s);
                                 setShowSuggestions(false);

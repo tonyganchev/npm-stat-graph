@@ -8,7 +8,7 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
-import { format, parseISO, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
+import { format, parseISO, startOfWeek, startOfMonth, startOfYear, getDay } from 'date-fns';
 import { CombinedData, GroupBy } from '../App';
 import { Activity } from 'lucide-react';
 import { PackageConfig, packageColors } from '../utils';
@@ -18,16 +18,35 @@ interface StatChartProps {
     packages: PackageConfig[];
     visiblePackages: PackageConfig[];
     groupBy?: GroupBy;
+    enabledDays: number[];
 }
 
-export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePackages, groupBy = "day" }) => {
+export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePackages, groupBy = "day", enabledDays }) => {
     // Process and Group Data
     const chartData = useMemo(() => {
         if (!data || data.length === 0) return [];
 
+        // Simple filtering: Remove disabled days entirely (Vanishing Days approach)
+        const filteredData = data.filter(item => enabledDays.includes(getDay(parseISO(item.day))));
+
+        if (groupBy === 'day') {
+            return filteredData.map(item => {
+                const dateObj = parseISO(item.day);
+                const dayItem: { day: string, formattedDate: string, shortDate: string, [pkgId: string]: any } = {
+                    day: item.day,
+                    formattedDate: format(dateObj, 'MMM d, yyyy'),
+                    shortDate: format(dateObj, 'MMM d'),
+                };
+                packages.forEach(p => {
+                    dayItem[p.id] = item.packages[p.id] || 0;
+                });
+                return dayItem;
+            });
+        }
+
         const groupedMap = new Map<string, { day: string, formattedDate: string, shortDate: string, [pkgId: string]: any }>();
 
-        data.forEach(item => {
+        filteredData.forEach(item => {
             const dateObj = parseISO(item.day);
             let groupStart = dateObj;
             let fmt = 'MMM d, yyyy';
@@ -66,7 +85,7 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
         });
 
         return Array.from(groupedMap.values()).sort((a, b) => a.day.localeCompare(b.day));
-    }, [data, groupBy, packages]);
+    }, [data, groupBy, packages, enabledDays]);
 
     const packageTotals = useMemo(() => {
         const totals: { [id: string]: number } = {};
@@ -123,14 +142,19 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
 
             return (
                 <div className="custom-tooltip">
-                    <p className="custom-tooltip-label">{payload[0].payload.formattedDate}</p>
-                    {sortedPayload.map((entry: any, index: number) => {
-                        return (
-                            <p key={index} style={{ color: entry.color, fontWeight: "bold", margin: 0, marginTop: index > 0 ? '0.25rem' : 0 }}>
-                                {entry.name}: <span style={{ color: "white" }}>{formatNumber(entry.value)}</span>
-                            </p>
-                        );
-                    })}
+                    <p className="stat-label custom-tooltip-label">{payload[0].payload.formattedDate}</p>
+                    <div className="tooltip-grid">
+                        {sortedPayload.map((entry: any, index: number) => (
+                            <React.Fragment key={index}>
+                                <div className="tooltip-row-label">
+                                    <span className="stat-label" style={{ color: entry.color }}>{entry.name}:</span>
+                                </div>
+                                <div className="tooltip-row-value">
+                                    <span className="stat-value">{formatNumber(entry.value)}</span>
+                                </div>
+                            </React.Fragment>
+                        ))}
+                    </div>
                 </div>
             );
         }
@@ -139,11 +163,11 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
 
     return (
         <div className="glass-panel chart-section" style={{ height: '550px', minHeight: '550px' }}>
-            <div className="chart-header" style={{ alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="chart-header">
                 <div className="stat-summary" style={{ minWidth: '150px' }}>
                     <span className="stat-label">Grouped By {groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</span>
                 </div>
-                <div style={{ display: 'flex', gap: '1.5rem', flex: 2, justifyContent: 'flex-end', textAlign: 'right', flexWrap: 'wrap' }}>
+                <div className="chart-summary-group">
                     {[...visiblePackages].sort((a, b) => (packageTotals[b.id] || 0) - (packageTotals[a.id] || 0)).map((pkg) => {
                         const originalIndex = packages.findIndex(p => p.id === pkg.id);
                         const color = packageColors[originalIndex % packageColors.length];
@@ -195,9 +219,9 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
                                         dataKey={pkg.id}
                                         name={pkg.name}
                                         stroke={color}
-                                        strokeWidth={1}
-                                        dot={showDots ? { r: 2, fill: "var(--card-bg)", stroke: color, strokeWidth: 1 } : false}
-                                        activeDot={{ r: 4, fill: color, stroke: "var(--text-primary)", strokeWidth: 1 }}
+                                        strokeWidth={1.5}
+                                        dot={showDots ? { r: 3, fill: "var(--card-bg)", stroke: color, strokeWidth: 1.5 } : false}
+                                        activeDot={{ r: 4, fill: color, stroke: "var(--text-primary)", strokeWidth: 1.5 }}
                                     />
                                 )
                             })}

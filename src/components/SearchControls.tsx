@@ -72,120 +72,131 @@ export const SearchControls: React.FC<SearchControlsProps> = ({
     const hasPackages = packages.some(p => p.name.trim().length > 0);
 
     return (
-        <div className="search-section glass-panel">
-            <form onSubmit={handleSubmit} className="input-group" style={{ flexDirection: 'column', gap: '1rem' }}>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
-                    {packages.map((pkg, i) => (
-                        <div key={pkg.id} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', width: '100%', position: 'relative' }}>
+        <div className="glass-panel">
+            <form onSubmit={handleSubmit} className="package-list">
+                {packages.map((pkg, i) => (
+                    <div key={pkg.id} className="package-input-row">
+                        {i < packages.length - 1 && (
+                            <div style={{
+                                position: 'absolute',
+                                bottom: '-0.25rem',
+                                right: '2.5rem',
+                                width: '5rem',
+                                borderBottom: hoveredSwapIndex === i ? '1px dotted rgba(255, 255, 255, 0.5)' : '1px dotted transparent',
+                                pointerEvents: 'none',
+                            }} />
+                        )}
+                        <div 
+                            className="package-color-indicator" 
+                            style={{ background: packageColors[i % packageColors.length] }} 
+                        />
+
+                        <AutocompleteInput
+                            value={pkg.name}
+                            onChange={(val) => updatePackageName(i, val)}
+                            placeholder={`Package ${i + 1} name`}
+                            disabled={isLoading}
+                            style={{
+                                border: `1px solid ${packageColors[i % packageColors.length]}`,
+                                outlineColor: packageColors[i % packageColors.length],
+                                opacity: pkg.visible ? 1 : 0.5
+                            }}
+                        />
+
+                        <button type="button" className="btn-icon" onClick={() => toggleVisibility(i)} title="Toggle Visibility">
+                            {pkg.visible ? <Eye size={20} /> : <EyeOff size={20} />}
+                        </button>
+
+                        <button type="button" className="btn-icon error" onClick={() => removePackage(i)} title="Remove Package">
+                            <X size={20} />
+                        </button>
+
+                        <div style={{ width: '2rem', display: 'flex', justifyContent: 'center', position: 'relative', alignSelf: 'stretch' }}>
                             {i < packages.length - 1 && (
-                                <div style={{
-                                    position: 'absolute',
-                                    bottom: '-0.25rem',
-                                    left: '0',
-                                    right: '0',
-                                    height: '2px',
-                                    backgroundColor: hoveredSwapIndex === i ? 'var(--primary-color)' : 'transparent',
-                                    transition: 'background-color 0.2s',
-                                    zIndex: 0,
-                                    pointerEvents: 'none',
-                                    transform: 'translateY(50%)'
-                                }} />
+                                <button
+                                    type="button"
+                                    className="btn-icon"
+                                    onMouseEnter={() => setHoveredSwapIndex(i)}
+                                    onMouseLeave={() => setHoveredSwapIndex(null)}
+                                    onClick={() => movePackage(i, 1)}
+                                    style={{
+                                        position: 'absolute',
+                                        top: '100%',
+                                        marginTop: '0.25rem',
+                                        transform: 'translateY(-50%)',
+                                        zIndex: 10,
+                                    }}
+                                    title="Swap with below"
+                                >
+                                    <ArrowUpDown size={14} />
+                                </button>
                             )}
-                            <div style={{ zIndex: 1, width: '4px', height: '100%', minHeight: '36px', background: packageColors[i % packageColors.length], borderRadius: '2px' }} />
-
-                            <AutocompleteInput
-                                value={pkg.name}
-                                onChange={(val) => updatePackageName(i, val)}
-                                placeholder={`Package ${i + 1} name`}
-                                disabled={isLoading}
-                                style={{
-                                    border: `1px solid ${packageColors[i % packageColors.length]}`,
-                                    outlineColor: packageColors[i % packageColors.length],
-                                    opacity: pkg.visible ? 1 : 0.5
-                                }}
-                            />
-
-                            <button type="button" className="btn-icon" onClick={() => toggleVisibility(i)} title="Toggle Visibility">
-                                {pkg.visible ? <Eye size={20} /> : <EyeOff size={20} />}
-                            </button>
-
-                            <button type="button" className="btn-icon error" onClick={() => removePackage(i)} title="Remove Package">
-                                <X size={20} />
-                            </button>
-
-                            <div style={{ width: '2rem', display: 'flex', justifyContent: 'center', position: 'relative', alignSelf: 'stretch' }}>
-                                {i < packages.length - 1 && (
-                                    <button
-                                        type="button"
-                                        className="btn-icon swap-btn"
-                                        onMouseEnter={() => setHoveredSwapIndex(i)}
-                                        onMouseLeave={() => setHoveredSwapIndex(null)}
-                                        onClick={() => movePackage(i, 1)}
-                                        style={{
-                                            position: 'absolute',
-                                            top: '100%',
-                                            marginTop: '0.25rem',
-                                            transform: 'translateY(-50%)',
-                                            zIndex: 10,
-                                        }}
-                                        title="Swap with below"
-                                    >
-                                        <ArrowUpDown size={14} />
-                                    </button>
-                                )}
-                            </div>
                         </div>
-                    ))}
-                </div>
+                    </div>
+                ))}
 
-                <div style={{ display: 'flex', justifyContent: 'flex-start', marginTop: '0.5rem' }}>
-                    <button type="button" className="btn btn-outline" onClick={addPackage} disabled={isLoading} style={{ whiteSpace: 'nowrap', padding: '0.5rem 1rem' }}>
+                <div style={{ display: 'flex', marginTop: '0.5rem' }}>
+                    <button type="button" className="btn" onClick={addPackage} disabled={isLoading}>
                         <Plus size={16} /> Add Package
                     </button>
                 </div>
             </form>
 
-            <div className="search-controls" style={{ marginTop: '1rem', flexWrap: 'wrap', alignItems: 'center', gap: '1rem', display: 'flex' }}>
-                <div className="time-toggles" style={{ flexWrap: 'wrap', display: 'flex', gap: '0.5rem' }}>
-                    <button type="button" className={`btn btn-outline ${range === 'last-7-days' ? 'active' : ''}`} onClick={() => handleRangeChange('last-7-days')} disabled={isLoading}>7 Days</button>
-                    <button type="button" className={`btn btn-outline ${range === 'last-30-days' ? 'active' : ''}`} onClick={() => handleRangeChange('last-30-days')} disabled={isLoading}>30 Days</button>
-                    <button type="button" className={`btn btn-outline ${range === 'last-quarter' ? 'active' : ''}`} onClick={() => handleRangeChange('last-quarter')} disabled={isLoading}>Quarter</button>
-                    <button type="button" className={`btn btn-outline ${range === 'last-6-months' ? 'active' : ''}`} onClick={() => handleRangeChange('last-6-months')} disabled={isLoading}>6 Months</button>
-                    <button type="button" className={`btn btn-outline ${range === 'last-year' ? 'active' : ''}`} onClick={() => handleRangeChange('last-year')} disabled={isLoading}>1 Year</button>
-                    <button type="button" className={`btn btn-outline ${range === 'last-2-years' ? 'active' : ''}`} onClick={() => handleRangeChange('last-2-years')} disabled={isLoading}>2 Years</button>
-                    <button type="button" className={`btn btn-outline ${range === 'last-5-years' ? 'active' : ''}`} onClick={() => handleRangeChange('last-5-years')} disabled={isLoading}>5 Years</button>
-                    <button type="button" className={`btn btn-outline ${range === 'last-10-years' ? 'active' : ''}`} onClick={() => handleRangeChange('last-10-years')} disabled={isLoading}>10 Years</button>
-                    <button type="button" className={`btn btn-outline ${range === 'wtd' ? 'active' : ''}`} onClick={() => handleRangeChange('wtd')} disabled={isLoading}>WTD</button>
-                    <button type="button" className={`btn btn-outline ${range === 'mtd' ? 'active' : ''}`} onClick={() => handleRangeChange('mtd')} disabled={isLoading}>MTD</button>
-                    <button type="button" className={`btn btn-outline ${range === 'ytd' ? 'active' : ''}`} onClick={() => handleRangeChange('ytd')} disabled={isLoading}>YTD</button>
-                    <button type="button" className={`btn btn-outline ${range === 'custom' ? 'active' : ''}`} onClick={() => handleRangeChange('custom')} disabled={isLoading}>Custom</button>
+            <div className="search-controls" style={{ marginTop: '2rem' }}>
+                <div className="time-toggles">
+                    {([
+                        ['last-7-days', '7 Days'],
+                        ['last-30-days', '30 Days'],
+                        ['last-quarter', 'Quarter'],
+                        ['last-6-months', '6 Months'],
+                        ['last-year', '1 Year'],
+                        ['last-2-years', '2 Years'],
+                        ['last-5-years', '5 Years'],
+                        ['last-10-years', '10 Years'],
+                        ['wtd', 'WTD'],
+                        ['mtd', 'MTD'],
+                        ['ytd', 'YTD'],
+                        ['custom', 'Custom']
+                    ] as const).map(([val, label]) => (
+                        <button
+                            key={val}
+                            type="button"
+                            className={`filter-chip ${range === val ? 'active' : ''}`}
+                            onClick={() => handleRangeChange(val)}
+                            disabled={isLoading}
+                        >
+                            {label}
+                        </button>
+                    ))}
                 </div>
 
-                <div style={{ display: 'flex', flex: 1, gap: '0.5rem', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                        <input
-                            type="date"
-                            className="input"
-                            value={customStart}
-                            onChange={(e) => { setCustomStart(e.target.value); setRange('custom'); }}
-                            disabled={isLoading}
-                        />
-                        <span>to</span>
-                        <input
-                            type="date"
-                            className="input"
-                            value={customEnd}
-                            onChange={(e) => { setCustomEnd(e.target.value); setRange('custom'); }}
-                            disabled={isLoading}
-                        />
-                    </div>
+                <div className="date-range-inputs">
+                    <input
+                        type="date"
+                        className="input"
+                        value={customStart}
+                        onChange={(e) => { setCustomStart(e.target.value); setRange('custom'); }}
+                        disabled={isLoading}
+                    />
+                    <span style={{ color: 'var(--text-secondary)' }}>to</span>
+                    <input
+                        type="date"
+                        className="input"
+                        value={customEnd}
+                        onChange={(e) => { setCustomEnd(e.target.value); setRange('custom'); }}
+                        disabled={isLoading}
+                    />
                 </div>
 
-                <button type="button" onClick={() => onSearch()} className="btn" disabled={isLoading || !hasPackages} style={{ whiteSpace: 'nowrap' }}>
+                <button 
+                    type="button" 
+                    onClick={() => onSearch()} 
+                    className="btn btn-primary" 
+                    disabled={isLoading || !hasPackages}
+                >
                     {isLoading ? <Loader2 className="spinning" size={20} /> : <Search size={20} />}
                     Search
                 </button>
-
             </div>
         </div>
     );

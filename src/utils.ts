@@ -1,14 +1,14 @@
 export const defaultPackage = '@tony.ganchev/eslint-plugin-header';
 
 export const packageColors = [
-    '#ec4899', // pink
-    '#3b82f6', // blue
-    '#10b981', // green
-    '#f59e0b', // yellow
-    '#8b5cf6', // purple
-    '#ef4444', // red
-    '#14b8a6', // teal
-    '#f97316'  // orange
+    '#f472b6', // Pink
+    '#60a5fa', // Blue (Fixed hue)
+    '#4ade80', // Green (Brightened)
+    '#f59e0b', // Yellow (Restored)
+    '#a78bfa', // Purple (Brightened)
+    '#f87171', // Red
+    '#2dd4bf', // Teal
+    '#fb923c'  // Orange
 ];
 
 export interface PackageConfig {
