@@ -28,12 +28,7 @@ export const DayFilter: React.FC<DayFilterProps> = ({ enabledDays, setEnabledDay
     };
 
     return (
-        <div className="glass-panel filter-panel">
-            <div className="filter-header">
-                <Calendar size={18} />
-                <span>Filter Days of Week</span>
-            </div>
-
+        <div className="filter-panel">
             <div className="filter-chips">
                 {DAYS_OF_WEEK.map((day) => {
                     const isActive = enabledDays.includes(day.value);

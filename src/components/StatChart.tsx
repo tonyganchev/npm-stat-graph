@@ -100,7 +100,7 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
 
     if (!chartData || chartData.length === 0 || visiblePackages.length === 0) {
         return (
-            <div className="glass-panel chart-section">
+            <div className="chart-section">
                 <div className="state-container">
                     <Activity className="state-icon" />
                     <p>No active data available to display.</p>
@@ -162,10 +162,10 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
     };
 
     return (
-        <div className="glass-panel chart-section" style={{ height: '550px', minHeight: '550px' }}>
+        <div className="chart-section" style={{ height: '550px', minHeight: '550px' }}>
             <div className="chart-header">
                 <div className="stat-summary" style={{ minWidth: '150px' }}>
-                    <span className="stat-label">Grouped By {groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</span>
+                    <span className="stat-label">Grouped by {groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</span>
                 </div>
                 <div className="chart-summary-group">
                     {[...visiblePackages].sort((a, b) => (packageTotals[b.id] || 0) - (packageTotals[a.id] || 0)).map((pkg) => {

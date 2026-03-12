@@ -72,7 +72,7 @@ export const SearchControls: React.FC<SearchControlsProps> = ({
     const hasPackages = packages.some(p => p.name.trim().length > 0);
 
     return (
-        <div className="glass-panel">
+        <div>
             <form onSubmit={handleSubmit} className="package-list">
                 {packages.map((pkg, i) => (
                     <div key={pkg.id} className="package-input-row">

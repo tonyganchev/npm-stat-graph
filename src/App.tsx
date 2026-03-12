@@ -207,7 +207,7 @@ function App() {
                 />
 
                 {error && (
-                    <div className="glass-panel state-container">
+                    <div className="state-container">
                         <AlertCircle className="state-icon" style={{ color: 'var(--error-color)', opacity: 1 }} />
                         <div className="error-text">
                             <p style={{ color: 'inherit', fontWeight: 'bold' }}>Error fetching data</p>
@@ -217,7 +217,7 @@ function App() {
                 )}
 
                 {partialErrors.length > 0 && !error && (
-                    <div className="glass-panel" style={{ borderColor: 'var(--error-color)', background: 'rgba(239, 68, 68, 0.05)', padding: '1rem', marginTop: '-1rem' }}>
+                    <div style={{ borderColor: 'var(--error-color)', background: 'rgba(239, 68, 68, 0.05)', padding: '1rem', marginTop: '-1rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--error-color)', fontWeight: 'bold', marginBottom: '0.5rem' }}>
                             <AlertCircle size={20} /> Some data could not be fetched
                         </div>
