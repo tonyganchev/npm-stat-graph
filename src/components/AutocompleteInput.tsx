@@ -55,8 +55,8 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
         <div ref={wrapperRef} className="autocomplete-wrapper">
             <input
                 type="text"
-                className="input"
-                style={{ width: '100%', ...style }}
+                className="input pkg-input"
+                style={style}
                 placeholder={placeholder}
                 value={value}
                 onChange={(e) => {

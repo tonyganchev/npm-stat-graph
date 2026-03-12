@@ -3,85 +3,13 @@ import { TrendingUp, AlertCircle } from 'lucide-react';
 import { SearchControls } from './components/SearchControls';
 import { StatChart } from './components/StatChart';
 import { DayFilter } from './components/DayFilter';
-import { fetchPackageStats, DateRangeType, calculateDateRange } from './api/npmApi';
-import { defaultPackage, PackageConfig } from './utils';
-
-export interface CombinedData {
-    day: string;
-    packages: { [pkgName: string]: number };
-}
-
-export type GroupBy = "day" | "week" | "month" | "year";
-
-const loadInitialState = () => {
-    let parsedState: any = null;
-
-    const params = new URLSearchParams(window.location.search);
-    const pkgsStr = params.get('packages');
-    const rangeParam = params.get('range') as DateRangeType;
-    const customStartParam = params.get('customStart') || '';
-    const customEndParam = params.get('customEnd') || '';
-    const daysParam = params.get('days');
-
-    if (pkgsStr) {
-        try {
-            const pkgs = JSON.parse(decodeURIComponent(pkgsStr));
-            let days = [0, 1, 2, 3, 4, 5, 6];
-            if (daysParam) {
-                try {
-                    days = JSON.parse(decodeURIComponent(daysParam));
-                } catch (e) { }
-            }
-            if (pkgs.length > 0) {
-                parsedState = { 
-                    packages: pkgs, 
-                    range: rangeParam || 'last-30-days', 
-                    customStart: customStartParam, 
-                    customEnd: customEndParam,
-                    enabledDays: days || [0, 1, 2, 3, 4, 5, 6]
-                };
-            }
-        } catch (e) { }
-    }
-
-    if (!parsedState) {
-        const saved = localStorage.getItem('npm-stats-state');
-        if (saved) {
-            try {
-                const parsed = JSON.parse(saved);
-                if (parsed.packages && parsed.packages.length > 0) {
-                    parsedState = parsed;
-                }
-            } catch (e) { }
-        }
-    }
-
-    if (!parsedState) {
-        parsedState = {
-            packages: [{ id: '1', name: defaultPackage, visible: true }],
-            range: 'last-30-days',
-            customStart: '',
-            customEnd: '',
-            enabledDays: [0, 1, 2, 3, 4, 5, 6]
-        };
-    }
-
-    if (parsedState.range !== 'custom') {
-        const { start, end } = calculateDateRange(parsedState.range);
-        parsedState.customStart = start;
-        parsedState.customEnd = end;
-    }
-
-    return parsedState;
-};
+import { fetchPackageStats } from './api/npmApi';
+import { CombinedData, DateRangeType } from './types';
+import { usePersistence } from './hooks/usePersistence';
 
 function App() {
-    const initialState = loadInitialState();
-    const [packages, setPackages] = useState<PackageConfig[]>(initialState.packages);
-    const [range, setRange] = useState<DateRangeType>(initialState.range);
-    const [customStart, setCustomStart] = useState<string>(initialState.customStart);
-    const [customEnd, setCustomEnd] = useState<string>(initialState.customEnd);
-    const [enabledDays, setEnabledDays] = useState<number[]>(initialState.enabledDays || [0, 1, 2, 3, 4, 5, 6]);
+    const { state, updateSync } = usePersistence();
+    const { packages, range, customStart, customEnd, enabledDays } = state;
 
     const [data, setData] = useState<CombinedData[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -104,50 +32,29 @@ function App() {
             const searchStart = overrides?.customStart !== undefined ? overrides.customStart : customStart;
             const searchEnd = overrides?.customEnd !== undefined ? overrides.customEnd : customEnd;
 
-            // Sync URL and LocalStorage
-            const state = { packages, range: searchRange, customStart: searchStart, customEnd: searchEnd };
-            localStorage.setItem('npm-stats-state', JSON.stringify(state));
-            const url = new URL(window.location.href);
-            url.searchParams.set('packages', encodeURIComponent(JSON.stringify(packages)));
-            url.searchParams.set('range', searchRange);
-            if (searchRange === 'custom') {
-                url.searchParams.set('customStart', searchStart);
-                url.searchParams.set('customEnd', searchEnd);
-            } else {
-                url.searchParams.delete('customStart');
-                url.searchParams.delete('customEnd');
-            }
-            url.searchParams.set('days', encodeURIComponent(JSON.stringify(enabledDays)));
-            window.history.replaceState({}, '', url.toString());
+            // Sync persistence
+            updateSync({ range: searchRange, customStart: searchStart, customEnd: searchEnd, packages });
 
             const statsPromises = activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
             const results = await Promise.all(statsPromises);
 
-            // Merge all results into CombinedData mapped by day
-            const dayMap = new Map<string, { [pkgConf: string]: number }>();
+            const dayMap = new Map<string, { [pkgId: string]: number }>();
             const extractedErrors: string[] = [];
 
             results.forEach((res, index) => {
-                const pkgConfigId = activePkgs[index].id;
-
-                if (res.error) {
-                    extractedErrors.push(`[${res.package}] ${res.error}`);
-                }
+                const pkgId = activePkgs[index].id;
+                if (res.error) extractedErrors.push(`[${res.package}] ${res.error}`);
 
                 res.downloads.forEach(d => {
-                    if (!dayMap.has(d.day)) {
-                        dayMap.set(d.day, {});
-                    }
-                    dayMap.get(d.day)![pkgConfigId] = d.downloads;
+                    if (!dayMap.has(d.day)) dayMap.set(d.day, {});
+                    dayMap.get(d.day)![pkgId] = d.downloads;
                 });
             });
 
-            const mergedData: CombinedData[] = Array.from(dayMap.entries()).map(([day, pkgsData]) => {
-                return {
-                    day,
-                    packages: pkgsData
-                };
-            }).sort((a, b) => a.day.localeCompare(b.day));
+            const mergedData: CombinedData[] = Array.from(dayMap.entries()).map(([day, pkgsData]) => ({
+                day,
+                packages: pkgsData
+            })).sort((a, b) => a.day.localeCompare(b.day));
 
             setData(mergedData);
             setPartialErrors(extractedErrors);
@@ -157,23 +64,12 @@ function App() {
         } finally {
             setIsLoading(false);
         }
-    }, [packages, range, customStart, customEnd, enabledDays]);
+    }, [packages, range, customStart, customEnd, updateSync]);
 
-    // Independent sync for enabledDays since it doesn't trigger a new fetch
-    useEffect(() => {
-        const state = JSON.parse(localStorage.getItem('npm-stats-state') || '{}');
-        state.enabledDays = enabledDays;
-        localStorage.setItem('npm-stats-state', JSON.stringify(state));
-
-        const url = new URL(window.location.href);
-        url.searchParams.set('days', encodeURIComponent(JSON.stringify(enabledDays)));
-        window.history.replaceState({}, '', url.toString());
-    }, [enabledDays]);
-
-    // Initial search only once
     useEffect(() => {
         handleSearch();
     }, []);
+
 
     // Filter out visible packages for charting
     const visiblePackages = packages.filter(p => p.visible && p.name.trim() !== '');
@@ -190,20 +86,20 @@ function App() {
             <main style={{ display: 'flex', flexDirection: 'column', gap: '2rem', flex: 1 }}>
                 <SearchControls
                     packages={packages}
-                    setPackages={setPackages}
+                    setPackages={(pkgs) => updateSync({ packages: pkgs })}
                     range={range}
-                    setRange={setRange}
+                    setRange={(r) => updateSync({ range: r })}
                     customStart={customStart}
-                    setCustomStart={setCustomStart}
+                    setCustomStart={(s) => updateSync({ customStart: s })}
                     customEnd={customEnd}
-                    setCustomEnd={setCustomEnd}
+                    setCustomEnd={(e) => updateSync({ customEnd: e })}
                     onSearch={handleSearch}
                     isLoading={isLoading}
                 />
 
                 <DayFilter 
                     enabledDays={enabledDays}
-                    setEnabledDays={setEnabledDays}
+                    setEnabledDays={(days) => updateSync({ enabledDays: days })}
                 />
 
                 {error && (

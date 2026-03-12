@@ -8,10 +8,11 @@ import {
     Tooltip,
     ResponsiveContainer
 } from 'recharts';
-import { format, parseISO, startOfWeek, startOfMonth, startOfYear, getDay } from 'date-fns';
-import { CombinedData, GroupBy } from '../App';
+import { parseISO, getDay } from 'date-fns';
+import { CombinedData, GroupBy, PackageConfig } from '../types';
 import { Activity } from 'lucide-react';
-import { PackageConfig, packageColors } from '../utils';
+import { packageColors } from '../utils';
+import { groupChartData } from '../chartUtils';
 
 interface StatChartProps {
     data: CombinedData[];
@@ -22,69 +23,10 @@ interface StatChartProps {
 }
 
 export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePackages, groupBy = "day", enabledDays }) => {
-    // Process and Group Data
     const chartData = useMemo(() => {
         if (!data || data.length === 0) return [];
-
-        // Simple filtering: Remove disabled days entirely (Vanishing Days approach)
         const filteredData = data.filter(item => enabledDays.includes(getDay(parseISO(item.day))));
-
-        if (groupBy === 'day') {
-            return filteredData.map(item => {
-                const dateObj = parseISO(item.day);
-                const dayItem: { day: string, formattedDate: string, shortDate: string, [pkgId: string]: any } = {
-                    day: item.day,
-                    formattedDate: format(dateObj, 'MMM d, yyyy'),
-                    shortDate: format(dateObj, 'MMM d'),
-                };
-                packages.forEach(p => {
-                    dayItem[p.id] = item.packages[p.id] || 0;
-                });
-                return dayItem;
-            });
-        }
-
-        const groupedMap = new Map<string, { day: string, formattedDate: string, shortDate: string, [pkgId: string]: any }>();
-
-        filteredData.forEach(item => {
-            const dateObj = parseISO(item.day);
-            let groupStart = dateObj;
-            let fmt = 'MMM d, yyyy';
-            let shortFmt = 'MMM d';
-
-            if (groupBy === 'week') {
-                groupStart = startOfWeek(dateObj);
-                fmt = "'Week of' MMM d, yyyy";
-            } else if (groupBy === 'month') {
-                groupStart = startOfMonth(dateObj);
-                fmt = "MMMM yyyy";
-                shortFmt = "MMM yyyy";
-            } else if (groupBy === 'year') {
-                groupStart = startOfYear(dateObj);
-                fmt = "yyyy";
-                shortFmt = "yyyy";
-            }
-
-            const key = groupStart.toISOString();
-
-            if (!groupedMap.has(key)) {
-                groupedMap.set(key, {
-                    day: key,
-                    formattedDate: format(groupStart, fmt),
-                    shortDate: format(groupStart, shortFmt)
-                });
-                packages.forEach(p => groupedMap.get(key)![p.id] = 0);
-            }
-
-            const current = groupedMap.get(key)!;
-            packages.forEach(p => {
-                if (item.packages[p.id]) {
-                    current[p.id] += item.packages[p.id];
-                }
-            });
-        });
-
-        return Array.from(groupedMap.values()).sort((a, b) => a.day.localeCompare(b.day));
+        return groupChartData(filteredData, groupBy, packages);
     }, [data, groupBy, packages, enabledDays]);
 
     const packageTotals = useMemo(() => {
@@ -97,17 +39,6 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
         });
         return totals;
     }, [chartData, packages]);
-
-    if (!chartData || chartData.length === 0 || visiblePackages.length === 0) {
-        return (
-            <div className="chart-section">
-                <div className="state-container">
-                    <Activity className="state-icon" />
-                    <p>No active data available to display.</p>
-                </div>
-            </div>
-        );
-    }
 
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const [chartWidth, setChartWidth] = useState<number>(0);
@@ -125,21 +56,16 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
 
     const showDots = useMemo(() => {
         if (!chartWidth || chartData.length <= 1) return true;
-        // Plot width is approx total width minus left/right margins (20) and YAxis width (60)
         const plotWidth = chartWidth - 80;
         const distance = plotWidth / chartData.length;
         return distance >= 8;
     }, [chartWidth, chartData.length]);
 
-    const formatNumber = (num: number) => {
-        return new Intl.NumberFormat('en-US').format(num);
-    };
+    const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num);
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
-            // Sort payloads by value descending
             const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
-
             return (
                 <div className="custom-tooltip">
                     <p className="stat-label custom-tooltip-label">{payload[0].payload.formattedDate}</p>
@@ -161,11 +87,26 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
         return null;
     };
 
+    if (!chartData || chartData.length === 0 || visiblePackages.length === 0) {
+        return (
+            <div className="chart-section">
+                <div className="state-container">
+                    <Activity className="state-icon" />
+                    <p>No active data available to display.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="chart-section" style={{ height: '550px', minHeight: '550px' }}>
             <div className="chart-header">
                 <div className="stat-summary" style={{ minWidth: '150px' }}>
-                    <span className="stat-label">Grouped by {groupBy.charAt(0).toUpperCase() + groupBy.slice(1)}</span>
+                    <span className="stat-label">
+                        {groupBy === 'day' ? 'Daily' : 
+                         groupBy === 'week' ? 'Weekly' : 
+                         groupBy === 'month' ? 'Monthly' : 'Yearly'} Downloads
+                    </span>
                 </div>
                 <div className="chart-summary-group">
                     {[...visiblePackages].sort((a, b) => (packageTotals[b.id] || 0) - (packageTotals[a.id] || 0)).map((pkg) => {
@@ -181,7 +122,6 @@ export const StatChart: React.FC<StatChartProps> = ({ data, packages, visiblePac
                 </div>
             </div>
 
-            {/* Need wrapper div to constrain responsive container explicitly */}
             <div className="chart-container" style={{ width: '100%', height: '400px', position: 'relative' }}>
                 <div style={{ width: '100%', height: '400px', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} ref={chartContainerRef}>
                     <ResponsiveContainer width="100%" height="100%">
