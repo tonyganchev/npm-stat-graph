@@ -137,10 +137,10 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                                         <span className="stat-label" style={{ color: entry.color }}>{entry.name}:</span>
                                     </div>
                                     <div className="tooltip-row-value">
-                                        <span className="stat-value" style={{ color: primaryColor, fontWeight: 600 }}>{primaryValue}</span>
+                                        <span className="stat-value" style={{ color: primaryColor }}>{primaryValue}</span>
                                     </div>
                                     <div className="tooltip-row-value">
-                                        <span className="stat-label" style={{ color: secondaryColor, fontSize: '0.75rem', fontWeight: 600 }}>
+                                        <span className="stat-label secondary-value" style={{ color: secondaryColor }}>
                                             {secondaryValue}
                                         </span>
                                     </div>
@@ -166,9 +166,9 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
     }
 
     return (
-        <div className="chart-section" style={{ height: '550px', minHeight: '550px' }}>
+        <div className="chart-section">
             <div className="chart-header">
-                <div className="stat-summary" style={{ minWidth: '150px' }}>
+                <div className="stat-summary stat-summary-main">
                     <span className="stat-label">
                         {groupBy === 'day' ? 'Daily' :
                             groupBy === 'week' ? 'Weekly' :
@@ -198,8 +198,8 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                 </div>
             </div>
 
-            <div className="chart-container" style={{ width: '100%', height: '400px', position: 'relative' }}>
-                <div style={{ width: '100%', height: '400px', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }} ref={chartContainerRef}>
+            <div className="chart-container">
+                <div className="chart-inner" ref={chartContainerRef}>
                     <ResponsiveContainer width="100%" height="100%">
                         <LineChart
                             data={chartData}

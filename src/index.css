@@ -1,22 +1,26 @@
 :root {
   color-scheme: dark;
-  --bg-gradient: linear-gradient(135deg, #0f172a 0%, #1e1b4b 100%);
+  --bg-gradient: linear-gradient(135deg, #15213b 0%, #1e4088d2 100%);
   --card-bg: rgba(15, 23, 42, 0.7);
-  --card-border: rgba(255, 255, 255, 0.1);
-  --primary-color: #6366f1;
-  --primary-hover: #4f46e5;
+  --card-border: rgba(255, 255, 255, 0.08);
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
-  --accent-color: #818cf8;
+  --accent-color: #0ea5e9;
   --success-color: #10b981;
   --error-color: #f79999;
-  --pkg1-color: #ec4899;
-  --pkg2-color: #3b82f6;
+  --pkg1-color: #3b82f6;
+  --pkg2-color: #0ea5e9;
   --input-bg: rgba(15, 23, 42, 0.6);
   --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%);
   --font-family: Tahoma, Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+
+  --chart-height: 550px;
+  --chart-plot-height: 400px;
+  --chart-summary-min-width: 150px;
 }
 
 * {
@@ -76,6 +80,21 @@ header h1 {
   color: var(--text-primary);
   font-size: 2rem;
   font-weight: normal;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.header-icon {
+  display: inline;
+  vertical-align: bottom;
+}
+
+.main-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  flex: 1;
 }
 
 /* Utility Classes */
@@ -437,7 +456,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 /* Chart Area */
 .chart-section {
   flex: 1;
-  min-height: 400px;
+  height: var(--chart-height);
+  min-height: var(--chart-height);
   display: flex;
   flex-direction: column;
   animation: fadeInUp 0.6s ease-out 0.4s both;
@@ -469,6 +489,16 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   gap: 0.25rem;
 }
 
+.stat-summary-main {
+  min-width: var(--chart-summary-min-width);
+}
+
+.charts-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
 
 .search-actions {
   display: flex;
@@ -489,8 +519,18 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .chart-container {
   flex: 1;
   width: 100%;
-  height: 100%;
-  min-height: 350px;
+  height: var(--chart-plot-height);
+  position: relative;
+}
+
+.chart-inner {
+  width: 100%;
+  height: var(--chart-plot-height);
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 /* Loading & Empty States */
@@ -513,12 +553,51 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   margin-bottom: 0.5rem;
 }
 
+.state-icon.error {
+  color: var(--error-color);
+  opacity: 1;
+}
+
 .error-text {
   color: var(--error-color);
   background: rgba(239, 68, 68, 0.1);
   padding: 1rem;
   border-radius: 0.5rem;
   border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.error-text b {
+  display: block;
+  font-weight: bold;
+}
+
+.error-text span {
+  display: block;
+  margin-top: 0.25rem;
+}
+
+.partial-error-container {
+  border: 1px solid var(--error-color);
+  background: rgba(239, 68, 68, 0.05);
+  padding: 1rem;
+  margin-top: -1rem;
+  border-radius: 0.5rem;
+}
+
+.partial-error-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--error-color);
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.partial-error-list {
+  margin: 0;
+  padding-left: 1.5rem;
+  color: var(--text-secondary);
+  font-size: 0.875rem;
 }
 
 /* Animations */
@@ -601,6 +680,11 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .custom-tooltip .stat-value {
+  font-weight: 600;
+}
+
+.secondary-value {
+  font-size: 0.75rem;
   font-weight: 600;
 }
 

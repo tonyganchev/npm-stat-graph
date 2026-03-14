@@ -78,12 +78,12 @@ function App() {
         <div className="app-container">
             <header>
                 <h1>
-                    <TrendingUp style={{ display: 'inline', marginRight: '0.5rem', verticalAlign: 'bottom' }} size={40} />
+                    <TrendingUp className="header-icon" size={40} />
                     npm-stat-plan
                 </h1>
             </header>
 
-            <main style={{ display: 'flex', flexDirection: 'column', gap: '2rem', flex: 1 }}>
+            <main className="main-content">
                 <SearchControls
                     packages={packages}
                     setPackages={(pkgs) => updateSync({ packages: pkgs })}
@@ -106,27 +106,27 @@ function App() {
 
                 {error && (
                     <div className="state-container">
-                        <AlertCircle className="state-icon" style={{ color: 'var(--error-color)', opacity: 1 }} />
+                        <AlertCircle className="state-icon error" />
                         <div className="error-text">
-                            <p style={{ color: 'inherit', fontWeight: 'bold' }}>Error fetching data</p>
-                            <p style={{ color: 'inherit', marginTop: '0.25rem' }}>{error}</p>
+                            <b>Error fetching data</b>
+                            <span>{error}</span>
                         </div>
                     </div>
                 )}
 
                 {partialErrors.length > 0 && !error && (
-                    <div style={{ borderColor: 'var(--error-color)', background: 'rgba(239, 68, 68, 0.05)', padding: '1rem', marginTop: '-1rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--error-color)', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+                    <div className="partial-error-container">
+                        <div className="partial-error-header">
                             <AlertCircle size={20} /> Some data could not be fetched
                         </div>
-                        <ul style={{ margin: 0, paddingLeft: '1.5rem', color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+                        <ul className="partial-error-list">
                             {partialErrors.map((err, i) => <li key={i}>{err}</li>)}
                         </ul>
                     </div>
                 )}
 
                 {!error && data && data.length > 0 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                    <div className="charts-stack">
                         <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="day" enabledDays={enabledDays} viewMode={viewMode} />
                         <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="week" enabledDays={enabledDays} viewMode={viewMode} />
                         <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="month" enabledDays={enabledDays} viewMode={viewMode} />

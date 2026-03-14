@@ -1,4 +1,4 @@
-import React from 'react';
+import { FC } from 'react';
 
 export const DAYS_OF_WEEK = [
     { label: 'Sun', value: 0 },
@@ -20,7 +20,7 @@ interface DayFilterProps {
     setViewMode: (mode: ViewMode) => void;
 }
 
-export const DayFilter: React.FC<DayFilterProps> = ({ enabledDays, setEnabledDays, viewMode, setViewMode }) => {
+export const DayFilter: FC<DayFilterProps> = ({ enabledDays, setEnabledDays, viewMode, setViewMode }) => {
     const toggleDay = (day: number) => {
         if (enabledDays.includes(day)) {
             if (enabledDays.length > 1) {
