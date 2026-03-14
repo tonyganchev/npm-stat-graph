@@ -15,10 +15,13 @@ export interface CombinedData {
 
 export type GroupBy = "day" | "week" | "month" | "year";
 
+export type ViewMode = "absolute" | "percent";
+
 export interface AppState {
     packages: PackageConfig[];
     range: DateRangeType;
     customStart: string;
     customEnd: string;
     enabledDays: number[];
+    viewMode: ViewMode;
 }

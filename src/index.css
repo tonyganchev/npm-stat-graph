@@ -333,7 +333,9 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 /* Filter Panel & Toggles */
 .filter-panel {
   display: flex;
-  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
   gap: 0.75rem;
   margin-bottom: 2rem;
 }
@@ -581,8 +583,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .tooltip-grid {
   display: grid;
-  grid-template-columns: auto auto;
-  gap: 0.25rem 1.5rem;
+  grid-template-columns: auto auto auto;
+  gap: 0.25rem 1rem;
   align-items: center;
 }
 
@@ -599,8 +601,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .custom-tooltip .stat-value {
-  color: white !important;
-  opacity: 1;
+  font-weight: 600;
 }
 
 .custom-tooltip .custom-tooltip-label {
@@ -611,4 +612,5 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .tooltip-row-value {
   text-align: right;
   font-variant-numeric: tabular-nums;
+  white-space: nowrap;
 }

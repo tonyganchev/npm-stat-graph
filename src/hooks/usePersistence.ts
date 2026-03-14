@@ -28,7 +28,8 @@ export function usePersistence() {
                 range: urlRange || 'last-30-days',
                 customStart: getParam('customStart') || '',
                 customEnd: getParam('customEnd') || '',
-                enabledDays: urlDays || [0, 1, 2, 3, 4, 5, 6]
+                enabledDays: urlDays || [0, 1, 2, 3, 4, 5, 6],
+                viewMode: (getParam('viewMode') as any) || 'absolute'
             };
         } else {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -45,7 +46,8 @@ export function usePersistence() {
             range: state?.range || 'last-30-days',
             customStart: state?.customStart || '',
             customEnd: state?.customEnd || '',
-            enabledDays: state?.enabledDays || [0, 1, 2, 3, 4, 5, 6]
+            enabledDays: state?.enabledDays || [0, 1, 2, 3, 4, 5, 6],
+            viewMode: state?.viewMode || 'absolute'
         };
 
         if (finalState.range !== 'custom') {
@@ -79,6 +81,8 @@ export function usePersistence() {
                 url.searchParams.delete('customStart');
                 url.searchParams.delete('customEnd');
             }
+            
+            url.searchParams.set('viewMode', newState.viewMode);
             
             window.history.replaceState({}, '', url.toString());
             return newState;

@@ -1,5 +1,4 @@
 import React from 'react';
-import { Calendar } from 'lucide-react';
 
 export const DAYS_OF_WEEK = [
     { label: 'Sun', value: 0 },
@@ -11,12 +10,17 @@ export const DAYS_OF_WEEK = [
     { label: 'Sat', value: 6 },
 ];
 
+import { ViewMode } from '../types';
+import { BarChart3, Percent } from 'lucide-react';
+
 interface DayFilterProps {
     enabledDays: number[];
     setEnabledDays: (days: number[]) => void;
+    viewMode: ViewMode;
+    setViewMode: (mode: ViewMode) => void;
 }
 
-export const DayFilter: React.FC<DayFilterProps> = ({ enabledDays, setEnabledDays }) => {
+export const DayFilter: React.FC<DayFilterProps> = ({ enabledDays, setEnabledDays, viewMode, setViewMode }) => {
     const toggleDay = (day: number) => {
         if (enabledDays.includes(day)) {
             if (enabledDays.length > 1) {
@@ -42,6 +46,25 @@ export const DayFilter: React.FC<DayFilterProps> = ({ enabledDays, setEnabledDay
                         </button>
                     );
                 })}
+            </div>
+
+            <div className="view-mode-toggle filter-chips">
+                <button
+                    onClick={() => setViewMode('absolute')}
+                    className={`filter-chip ${viewMode === 'absolute' ? 'active' : ''}`}
+                    title="Absolute Downloads"
+                >
+                    <BarChart3 size={16} />
+                    <span>Absolute</span>
+                </button>
+                <button
+                    onClick={() => setViewMode('percent')}
+                    className={`filter-chip ${viewMode === 'percent' ? 'active' : ''}`}
+                    title="Percentage Change"
+                >
+                    <Percent size={14} />
+                    <span>Change</span>
+                </button>
             </div>
         </div>
     );

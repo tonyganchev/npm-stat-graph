@@ -9,7 +9,7 @@ import { usePersistence } from './hooks/usePersistence';
 
 function App() {
     const { state, updateSync } = usePersistence();
-    const { packages, range, customStart, customEnd, enabledDays } = state;
+    const { packages, range, customStart, customEnd, enabledDays, viewMode } = state;
 
     const [data, setData] = useState<CombinedData[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
@@ -100,6 +100,8 @@ function App() {
                 <DayFilter 
                     enabledDays={enabledDays}
                     setEnabledDays={(days) => updateSync({ enabledDays: days })}
+                    viewMode={viewMode}
+                    setViewMode={(mode) => updateSync({ viewMode: mode })}
                 />
 
                 {error && (
@@ -125,10 +127,10 @@ function App() {
 
                 {!error && data && data.length > 0 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="day" enabledDays={enabledDays} />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="week" enabledDays={enabledDays} />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="month" enabledDays={enabledDays} />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="year" enabledDays={enabledDays} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="day" enabledDays={enabledDays} viewMode={viewMode} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="week" enabledDays={enabledDays} viewMode={viewMode} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="month" enabledDays={enabledDays} viewMode={viewMode} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="year" enabledDays={enabledDays} viewMode={viewMode} />
                     </div>
                 )}
             </main>
