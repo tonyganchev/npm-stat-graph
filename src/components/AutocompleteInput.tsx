@@ -3,12 +3,13 @@ import React, { useState, useEffect, useRef } from 'react';
 interface AutocompleteInputProps {
     value: string;
     onChange: (val: string) => void;
+    onBlur?: () => void;
     placeholder: string;
     disabled: boolean;
     style?: React.CSSProperties;
 }
 
-export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onChange, placeholder, disabled, style }) => {
+export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onChange, onBlur, placeholder, disabled, style }) => {
     const [suggestions, setSuggestions] = useState<string[]>([]);
     const [showSuggestions, setShowSuggestions] = useState(false);
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -67,6 +68,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
                 onFocus={() => {
                     if (suggestions.length > 0) setShowSuggestions(true);
                 }}
+                onBlur={onBlur}
             />
             {showSuggestions && suggestions.length > 0 && (
                 <div className="autocomplete-dropdown">
