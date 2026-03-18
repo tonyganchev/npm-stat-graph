@@ -118,12 +118,36 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
 
     const CustomTooltip = ({ active, payload }: any) => {
         if (active && payload && payload.length) {
-            const sortedPayload = [...payload].sort((a, b) => b.value - a.value);
+            const dataPoint = payload[0].payload;
+            const isBarChart = payload.some((p: any) => p.dataKey === 'maxVal');
+            
+            let displayItems = [];
+            if (isBarChart && dataPoint.pkgStats) {
+                displayItems = visiblePackages.map(pkg => {
+                    const stats = dataPoint.pkgStats[pkg.id] || { downloads: 0, rateChangePercent: 0 };
+                    const value = viewMode === 'percent' ? stats.rateChangePercent : stats.downloads;
+                    return {
+                        dataKey: pkg.id,
+                        name: pkg.name,
+                        value,
+                        payload: dataPoint,
+                        color: packageColors[packages.findIndex(p => p.id === pkg.id) % packageColors.length]
+                    };
+                });
+            } else {
+                displayItems = payload.map((p: any) => ({
+                    ...p,
+                    color: p.stroke || p.color || p.fill
+                }));
+            }
+
+            const sortedItems = [...displayItems].sort((a, b) => (b.value || 0) - (a.value || 0));
+
             return (
                 <div className="custom-tooltip">
-                    <p className="stat-label custom-tooltip-label">{payload[0].payload.formattedDate}</p>
+                    <p className="stat-label custom-tooltip-label">{dataPoint.formattedDate}</p>
                     <div className="tooltip-grid">
-                        {sortedPayload.map((entry: any, index: number) => {
+                        {sortedItems.map((entry: any, index: number) => {
                             const pkgId = entry.dataKey;
                             const stats = entry.payload.pkgStats?.[pkgId] || { downloads: 0, rateChangePercent: 0 };
                             const { downloads: abs, rateChangePercent: pct } = stats;
@@ -135,13 +159,11 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                             const primaryValue = viewMode === 'percent' ? formattedPct : formattedAbs;
                             const secondaryValue = viewMode === 'percent' ? `(${formattedAbs})` : `(${formattedPct})`;
 
-                            // Color primary value if in percent mode, else keep standard text color
                             const primaryColor = viewMode === 'percent' ? pctColor : '#f8fafc';
-                            // Color secondary value if it's the percentage (in absolute mode)
                             const secondaryColor = viewMode === 'percent' ? '#94a3b8' : pctColor;
 
                             return (
-                                <Fragment key={index}>
+                                <Fragment key={pkgId || index}>
                                     <div className="tooltip-row-label">
                                         <span className="stat-label" style={{ color: entry.color }}>{entry.name}:</span>
                                     </div>
