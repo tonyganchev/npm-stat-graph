@@ -55,13 +55,12 @@ export async function fetchPackageStats(
   customStart?: string,
   customEnd?: string
 ): Promise<NpmStatsResponse> {
-  let exactStart = "";
-  let exactEnd = "";
+  // Always prioritize passed dates if provided, or use rangeType to calculate them.
+  // The user wants the logic to be centered around the from-to dates.
+  let exactStart = customStart || "";
+  let exactEnd = customEnd || "";
 
-  if (rangeType === "custom" && customStart && customEnd) {
-    exactStart = customStart;
-    exactEnd = customEnd;
-  } else {
+  if (!exactStart || !exactEnd) {
     const { start, end } = calculateDateRange(rangeType);
     exactStart = start;
     exactEnd = end;

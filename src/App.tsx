@@ -4,19 +4,19 @@ import { SearchControls } from './components/SearchControls';
 import { StatChart } from './components/StatChart';
 import { DayFilter } from './components/DayFilter';
 import { fetchPackageStats } from './api/npmApi';
-import { CombinedData, DateRangeType } from './types';
+import { CombinedData } from './types';
 import { usePersistence } from './hooks/usePersistence';
 
 function App() {
     const { state, updateSync } = usePersistence();
-    const { packages, range, customStart, customEnd, enabledDays, viewMode } = state;
+    const { packages, range, customStart, customEnd, enabledDays, viewMode, chartType } = state;
 
     const [data, setData] = useState<CombinedData[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [partialErrors, setPartialErrors] = useState<string[]>([]);
 
-    const handleSearch = useCallback(async (overrides?: { range?: DateRangeType, customStart?: string, customEnd?: string }) => {
+    const handleSearch = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         setPartialErrors([]);
@@ -28,12 +28,9 @@ function App() {
                 return;
             }
 
-            const searchRange = overrides?.range || range;
-            const searchStart = overrides?.customStart !== undefined ? overrides.customStart : customStart;
-            const searchEnd = overrides?.customEnd !== undefined ? overrides.customEnd : customEnd;
-
-            // Sync persistence
-            updateSync({ range: searchRange, customStart: searchStart, customEnd: searchEnd, packages });
+            const searchRange = range;
+            const searchStart = customStart;
+            const searchEnd = customEnd;
 
             const statsPromises = activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
             const results = await Promise.all(statsPromises);
@@ -64,11 +61,19 @@ function App() {
         } finally {
             setIsLoading(false);
         }
-    }, [packages, range, customStart, customEnd, updateSync]);
+    }, [packages, range, customStart, customEnd]);
 
+    // Initial load
     useEffect(() => {
         handleSearch();
     }, []);
+
+    // Reactive search only for time range preset/date selection
+    useEffect(() => {
+        if (range !== 'custom' || (customStart && customEnd)) {
+            handleSearch();
+        }
+    }, [range, customStart, customEnd]);
 
 
     // Filter out visible packages for charting
@@ -102,6 +107,8 @@ function App() {
                     setEnabledDays={(days) => updateSync({ enabledDays: days })}
                     viewMode={viewMode}
                     setViewMode={(mode) => updateSync({ viewMode: mode })}
+                    chartType={chartType}
+                    setChartType={(type) => updateSync({ chartType: type })}
                 />
 
                 {error && (
@@ -127,10 +134,10 @@ function App() {
 
                 {!error && data && data.length > 0 && (
                     <div className="charts-stack">
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="day" enabledDays={enabledDays} viewMode={viewMode} />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="week" enabledDays={enabledDays} viewMode={viewMode} />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="month" enabledDays={enabledDays} viewMode={viewMode} />
-                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="year" enabledDays={enabledDays} viewMode={viewMode} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="day" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="week" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="month" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                        <StatChart data={data} packages={packages} visiblePackages={visiblePackages} groupBy="year" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
                     </div>
                 )}
             </main>

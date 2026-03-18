@@ -29,7 +29,8 @@ export function usePersistence() {
                 customStart: getParam('customStart') || '',
                 customEnd: getParam('customEnd') || '',
                 enabledDays: urlDays || [0, 1, 2, 3, 4, 5, 6],
-                viewMode: (getParam('viewMode') as any) || 'absolute'
+                viewMode: (getParam('viewMode') as any) || 'absolute',
+                chartType: (getParam('chartType') as any) || 'line'
             };
         } else {
             const saved = localStorage.getItem(STORAGE_KEY);
@@ -47,7 +48,8 @@ export function usePersistence() {
             customStart: state?.customStart || '',
             customEnd: state?.customEnd || '',
             enabledDays: state?.enabledDays || [0, 1, 2, 3, 4, 5, 6],
-            viewMode: state?.viewMode || 'absolute'
+            viewMode: state?.viewMode || 'absolute',
+            chartType: state?.chartType || 'line'
         };
 
         if (finalState.range !== 'custom') {
@@ -83,6 +85,7 @@ export function usePersistence() {
             }
             
             url.searchParams.set('viewMode', newState.viewMode);
+            url.searchParams.set('chartType', newState.chartType);
             
             window.history.replaceState({}, '', url.toString());
             return newState;

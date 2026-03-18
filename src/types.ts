@@ -17,6 +17,8 @@ export type GroupBy = "day" | "week" | "month" | "year";
 
 export type ViewMode = "absolute" | "percent";
 
+export type ChartType = "line" | "bar";
+
 export interface AppState {
     packages: PackageConfig[];
     range: DateRangeType;
@@ -24,4 +26,5 @@ export interface AppState {
     customEnd: string;
     enabledDays: number[];
     viewMode: ViewMode;
+    chartType: ChartType;
 }

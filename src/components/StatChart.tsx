@@ -2,6 +2,8 @@ import { useMemo, useState, useRef, useEffect, FC, Fragment } from 'react';
 import {
     LineChart,
     Line,
+    BarChart,
+    Bar,
     XAxis,
     YAxis,
     CartesianGrid,
@@ -11,7 +13,7 @@ import {
     ReferenceLine
 } from 'recharts';
 import { parseISO, getDay } from 'date-fns';
-import { CombinedData, GroupBy, PackageConfig, ViewMode } from '../types';
+import { CombinedData, GroupBy, PackageConfig, ViewMode, ChartType } from '../types';
 import { Activity } from 'lucide-react';
 import { packageColors } from '../utils';
 import { groupChartData } from '../chartUtils';
@@ -23,9 +25,10 @@ interface StatChartProps {
     groupBy?: GroupBy;
     enabledDays: number[];
     viewMode: ViewMode;
+    chartType: ChartType;
 }
 
-export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages, groupBy = "day", enabledDays, viewMode }) => {
+export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages, groupBy = "day", enabledDays, viewMode, chartType }) => {
     const chartData = useMemo(() => {
         if (!data || data.length === 0) return [];
         const filteredData = data.filter(item => enabledDays.includes(getDay(parseISO(item.day))));
@@ -42,7 +45,7 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                 const abs = item[p.id] || 0;
                 let pct = 0;
                 if (prev) {
-                    const prevAbs = prev[p.id] || 0; // Use the raw absolute value from the grouped data
+                    const prevAbs = prev[p.id] || 0;
                     if (prevAbs === 0) {
                         pct = abs > 0 ? 100 : 0;
                     } else {
@@ -50,12 +53,18 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                     }
                 }
 
-                // Store both in a proper structure for metadata
                 newItem.pkgStats[p.id] = { downloads: abs, rateChangePercent: pct };
-
-                // Set the value used for charting/sorting
                 newItem[p.id] = viewMode === 'percent' ? pct : abs;
             });
+
+            // Add max value for domain calculation
+            const statsArray = Object.values(newItem.pkgStats) as { downloads: number, rateChangePercent: number }[];
+            if (viewMode === 'percent') {
+                newItem.maxVal = Math.max(...statsArray.map(s => s.rateChangePercent), 0);
+            } else {
+                newItem.maxVal = Math.max(...statsArray.map(s => s.downloads), 0);
+            }
+
             return newItem;
         });
     }, [data, groupBy, packages, enabledDays, viewMode]);
@@ -201,55 +210,154 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
             <div className="chart-container">
                 <div className="chart-inner" ref={chartContainerRef}>
                     <ResponsiveContainer width="100%" height="100%">
-                        <LineChart
-                            data={chartData}
-                            margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
-                        >
-                            <CartesianGrid strokeDasharray="1 2" stroke="var(--text-secondary)" vertical={false} />
-                            <XAxis
-                                dataKey="shortDate"
-                                stroke="var(--text-secondary)"
-                                tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                                tickMargin={10}
-                                minTickGap={30}
-                            />
-                            <YAxis
-                                stroke="var(--text-secondary)"
-                                tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                                tickFormatter={(value) => {
-                                    if (viewMode === 'percent') return `${value.toFixed(0)}%`;
-                                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-                                    if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
-                                    return value;
-                                }}
-                                width={60}
-                            />
-                            <Tooltip content={<CustomTooltip />} />
+                        {chartType === 'line' ? (
+                            <LineChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                            >
+                                <CartesianGrid strokeDasharray="1 2" stroke="var(--text-secondary)" vertical={false} />
+                                <XAxis
+                                    dataKey="shortDate"
+                                    stroke="var(--text-secondary)"
+                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                                    tickMargin={10}
+                                    minTickGap={30}
+                                />
+                                <YAxis
+                                    stroke="var(--text-secondary)"
+                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                                    tickFormatter={(value) => {
+                                        if (viewMode === 'percent') return `${value.toFixed(0)}%`;
+                                        if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                                        if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+                                        return value;
+                                    }}
+                                    width={60}
+                                />
+                                <Tooltip content={<CustomTooltip />} />
 
-                            {viewMode === 'percent' && (
-                                <>
-                                    <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
-                                    <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
-                                </>
-                            )}
+                                {viewMode === 'percent' && (
+                                    <>
+                                        <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
+                                        <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
+                                    </>
+                                )}
 
-                            {visiblePackages.map((pkg) => {
-                                const originalIndex = packages.findIndex(p => p.id === pkg.id);
-                                const color = packageColors[originalIndex % packageColors.length];
-                                return (
-                                    <Line
-                                        key={pkg.id}
-                                        type="monotone"
-                                        dataKey={pkg.id}
-                                        name={pkg.name}
-                                        stroke={color}
-                                        strokeWidth={1.5}
-                                        dot={showDots ? { r: 3, fill: "var(--card-bg)", stroke: color, strokeWidth: 1.5 } : false}
-                                        activeDot={{ r: 4, fill: color, stroke: "var(--text-primary)", strokeWidth: 1.5 }}
-                                    />
-                                )
-                            })}
-                        </LineChart>
+                                {visiblePackages.map((pkg) => {
+                                    const originalIndex = packages.findIndex(p => p.id === pkg.id);
+                                    const color = packageColors[originalIndex % packageColors.length];
+                                    return (
+                                        <Line
+                                            key={pkg.id}
+                                            type="monotone"
+                                            dataKey={pkg.id}
+                                            name={pkg.name}
+                                            stroke={color}
+                                            strokeWidth={1.5}
+                                            dot={showDots ? { r: 3, fill: "var(--card-bg)", stroke: color, strokeWidth: 1.5 } : false}
+                                            activeDot={{ r: 4, fill: color, stroke: "var(--text-primary)", strokeWidth: 1.5 }}
+                                        />
+                                    )
+                                })}
+                            </LineChart>
+                        ) : (
+                            <BarChart
+                                data={chartData}
+                                margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                            >
+                                <CartesianGrid strokeDasharray="1 2" stroke="var(--text-secondary)" vertical={false} />
+                                <XAxis
+                                    dataKey="shortDate"
+                                    stroke="var(--text-secondary)"
+                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                                    tickMargin={10}
+                                    minTickGap={30}
+                                />
+                                <YAxis
+                                    stroke="var(--text-secondary)"
+                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                                    tickFormatter={(value) => {
+                                        if (viewMode === 'percent') return `${value.toFixed(0)}%`;
+                                        if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+                                        if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
+                                        return value;
+                                    }}
+                                    width={60}
+                                />
+                                <Tooltip content={<CustomTooltip />} />
+
+                                {viewMode === 'percent' && (
+                                    <>
+                                        <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
+                                        <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
+                                    </>
+                                )}
+
+                                {viewMode === 'percent' && (
+                                    <>
+                                        <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
+                                        <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
+                                    </>
+                                )}
+
+                                {/* Anchor bars to establish the domain. We set opacity to 0 
+                                    and overlapping to avoid messing with categories. */}
+                                {viewMode === 'percent' && (
+                                    <>
+                                        <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
+                                        <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
+                                    </>
+                                )}
+
+                                {/* Outline style bars that overlap perfectly.
+                                    This ensures all plugins are visible even if they have 
+                                    identical or overlapping values. */}
+                                <Bar
+                                    dataKey="maxVal"
+                                    fill="none"
+                                    isAnimationActive={false}
+                                    shape={(props: any) => {
+                                        const { x, width, y: maxY, height: maxHeight, payload } = props;
+                                        if (!payload || !payload.pkgStats) return null as any;
+                                        
+                                        const { pkgStats, maxVal } = payload;
+                                        const y0 = maxY + maxHeight; // Base (zero-line)
+
+                                        return (
+                                            <g>
+                                                {visiblePackages.map((pkg) => {
+                                                    const val = viewMode === 'percent' 
+                                                        ? pkgStats[pkg.id]?.rateChangePercent || 0 
+                                                        : pkgStats[pkg.id]?.downloads || 0;
+                                                    
+                                                    // Ratio = val / maxVal. Height = ratio * maxHeight.
+                                                    const h = !maxVal ? 0 : (Math.abs(val) / maxVal) * maxHeight;
+                                                    const y = y0 - h; 
+                                                    
+                                                    const originalIndex = packages.findIndex(p => p.id === pkg.id);
+                                                    const color = packageColors[originalIndex % packageColors.length];
+
+                                                    return (
+                                                        <rect
+                                                            key={pkg.id}
+                                                            x={x}
+                                                            y={y}
+                                                            width={width}
+                                                            height={h}
+                                                            fill="none"
+                                                            stroke={color}
+                                                            strokeWidth={1}
+                                                            rx={2}
+                                                            ry={2}
+                                                        />
+                                                    );
+                                                })}
+                                            </g>
+                                        );
+                                    }}
+                                />
+                            </BarChart>
+                        )}
                     </ResponsiveContainer>
                 </div>
             </div>

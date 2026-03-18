@@ -14,7 +14,7 @@ interface SearchControlsProps {
     setCustomStart: (val: string) => void;
     customEnd: string;
     setCustomEnd: (val: string) => void;
-    onSearch: (overrides?: { range?: DateRangeType, customStart?: string, customEnd?: string }) => void;
+    onSearch: () => void;
     isLoading: boolean;
 }
 
@@ -33,21 +33,18 @@ export const SearchControls: FC<SearchControlsProps> = ({
             const { start, end } = calculateDateRange(newRange);
             setCustomStart(start);
             setCustomEnd(end);
-            onSearch({ range: newRange, customStart: start, customEnd: end });
         }
     };
 
     const hasPackages = packages.some(p => p.name.length > 0);
 
     return (
-        <div>
-            <form onSubmit={handleSubmit}>
-                <PackageSelector
-                    packages={packages}
-                    setPackages={setPackages}
-                    isLoading={isLoading}
-                />
-            </form>
+        <form onSubmit={handleSubmit} className="search-controls-wrapper">
+            <PackageSelector
+                packages={packages}
+                setPackages={setPackages}
+                isLoading={isLoading}
+            />
 
             <div className="search-controls">
                 <DateRangeSelector
@@ -62,8 +59,7 @@ export const SearchControls: FC<SearchControlsProps> = ({
                 />
 
                 <button
-                    type="button"
-                    onClick={() => onSearch()}
+                    type="submit"
                     className="btn btn-primary btn-search-main"
                     disabled={isLoading || !hasPackages}
                 >
@@ -71,7 +67,6 @@ export const SearchControls: FC<SearchControlsProps> = ({
                     Search
                 </button>
             </div>
-
-        </div>
+        </form>
     );
 };

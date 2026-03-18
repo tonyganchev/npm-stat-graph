@@ -10,17 +10,21 @@ export const DAYS_OF_WEEK = [
     { label: 'Sat', value: 6 },
 ];
 
-import { ViewMode } from '../types';
-import { BarChart3, Percent } from 'lucide-react';
+import { ViewMode, ChartType } from '../types';
+import { BarChart3, Percent, LineChart as LineChartIcon, BarChart2 } from 'lucide-react';
 
 interface DayFilterProps {
     enabledDays: number[];
     setEnabledDays: (days: number[]) => void;
     viewMode: ViewMode;
     setViewMode: (mode: ViewMode) => void;
+    chartType: ChartType;
+    setChartType: (type: ChartType) => void;
 }
 
-export const DayFilter: FC<DayFilterProps> = ({ enabledDays, setEnabledDays, viewMode, setViewMode }) => {
+export const DayFilter: FC<DayFilterProps> = ({ 
+    enabledDays, setEnabledDays, viewMode, setViewMode, chartType, setChartType 
+}) => {
     const toggleDay = (day: number) => {
         if (enabledDays.includes(day)) {
             if (enabledDays.length > 1) {
@@ -64,6 +68,25 @@ export const DayFilter: FC<DayFilterProps> = ({ enabledDays, setEnabledDays, vie
                 >
                     <Percent size={14} />
                     <span>Change</span>
+                </button>
+            </div>
+
+            <div className="view-mode-toggle filter-chips">
+                <button
+                    onClick={() => setChartType('line')}
+                    className={`filter-chip ${chartType === 'line' ? 'active' : ''}`}
+                    title="Line Chart"
+                >
+                    <LineChartIcon size={16} />
+                    <span>Line</span>
+                </button>
+                <button
+                    onClick={() => setChartType('bar')}
+                    className={`filter-chip ${chartType === 'bar' ? 'active' : ''}`}
+                    title="Bar Chart"
+                >
+                    <BarChart2 size={16} />
+                    <span>Bar</span>
                 </button>
             </div>
         </div>
