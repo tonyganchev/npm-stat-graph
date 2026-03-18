@@ -280,10 +280,10 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                                         const { x, y, payload, index, width: axisWidth } = props;
                                         // Use the exact width of the axis provided by Recharts
                                         const bandwidth = chartData.length > 0 ? axisWidth / chartData.length : 0;
-                                        
+
                                         // Shift back to the boundary
                                         const boundaryX = x - (bandwidth / 2);
-                                        
+
                                         // Pull up to truly intersect the bar baseline (reversing Recharts' internal padding)
                                         const adjustedY = y - 6;
 
@@ -300,13 +300,13 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
 
                                                 {/* Vertical Tick Mark: exactly touching the baseline */}
                                                 <line y1={0} y2={6} stroke="var(--text-secondary)" strokeWidth={1} />
-                                                
+
                                                 {showLabel && (
                                                     <text dy={20} textAnchor="middle" fill="var(--text-secondary)" fontSize={11}>
                                                         {payload.value}
                                                     </text>
                                                 )}
-                                                
+
                                                 {/* Final boundary marker */}
                                                 {isLast && (
                                                     <line x1={bandwidth} x2={bandwidth} y1={0} y2={6} stroke="var(--text-secondary)" strokeWidth={1} />
@@ -329,7 +329,10 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                                     }}
                                     width={60}
                                 />
-                                <Tooltip content={<CustomTooltip />} />
+                                <Tooltip
+                                    content={<CustomTooltip />}
+                                    cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
+                                />
 
                                 {viewMode === 'percent' && (
                                     <>
