@@ -263,14 +263,59 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                         ) : (
                             <BarChart
                                 data={chartData}
-                                margin={{ top: 10, right: 10, left: 10, bottom: 0 }}
+                                barCategoryGap="5%"
+                                margin={{ top: 10, right: 30, left: 40, bottom: 50 }}
                             >
-                                <CartesianGrid strokeDasharray="1 2" stroke="var(--text-secondary)" vertical={false} />
+                                <CartesianGrid
+                                    strokeDasharray="1 2"
+                                    stroke="var(--text-secondary)"
+                                    vertical={false}
+                                />
                                 <XAxis
                                     dataKey="shortDate"
                                     stroke="var(--text-secondary)"
-                                    tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                                    tickMargin={10}
+                                    interval={0} // Process every tick to calculate boundaries accurately
+                                    tickLine={false}
+                                    tick={(props: any) => {
+                                        const { x, y, payload, index, width: axisWidth } = props;
+                                        // Use the exact width of the axis provided by Recharts
+                                        const bandwidth = chartData.length > 0 ? axisWidth / chartData.length : 0;
+                                        
+                                        // Shift back to the boundary
+                                        const boundaryX = x - (bandwidth / 2);
+                                        
+                                        // Pull up to truly intersect the bar baseline (reversing Recharts' internal padding)
+                                        const adjustedY = y - 6;
+
+                                        const step = Math.max(1, Math.floor(chartData.length / 8));
+                                        const showLabel = index % step === 0;
+                                        const isLast = index === chartData.length - 1;
+
+                                        return (
+                                            <g transform={`translate(${boundaryX},${adjustedY})`}>
+                                                {/* Unified Baseline: perfectly connected to the bottom of the bars */}
+                                                {index === 0 && (
+                                                    <line x1={0} x2={axisWidth} y1={0} y2={0} stroke="var(--text-secondary)" strokeWidth={1} />
+                                                )}
+
+                                                {/* Vertical Tick Mark: exactly touching the baseline */}
+                                                <line y1={0} y2={6} stroke="var(--text-secondary)" strokeWidth={1} />
+                                                
+                                                {showLabel && (
+                                                    <text dy={20} textAnchor="middle" fill="var(--text-secondary)" fontSize={11}>
+                                                        {payload.value}
+                                                    </text>
+                                                )}
+                                                
+                                                {/* Final boundary marker */}
+                                                {isLast && (
+                                                    <line x1={bandwidth} x2={bandwidth} y1={0} y2={6} stroke="var(--text-secondary)" strokeWidth={1} />
+                                                )}
+                                            </g>
+                                        );
+                                    }}
+                                    axisLine={false} // Hidden in favor of our perfectly connected custom baseline above
+                                    tickMargin={0}
                                     minTickGap={30}
                                 />
                                 <YAxis
@@ -293,21 +338,7 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                                     </>
                                 )}
 
-                                {viewMode === 'percent' && (
-                                    <>
-                                        <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
-                                        <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
-                                    </>
-                                )}
-
-                                {/* Anchor bars to establish the domain. We set opacity to 0 
-                                    and overlapping to avoid messing with categories. */}
-                                {viewMode === 'percent' && (
-                                    <>
-                                        <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
-                                        <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
-                                    </>
-                                )}
+                                {/* Final boundary tick is now handled by the custom tick component's isLast check */}
 
                                 {/* Outline style bars that overlap perfectly.
                                     This ensures all plugins are visible even if they have 
@@ -319,21 +350,21 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                                     shape={(props: any) => {
                                         const { x, width, y: maxY, height: maxHeight, payload } = props;
                                         if (!payload || !payload.pkgStats) return null as any;
-                                        
+
                                         const { pkgStats, maxVal } = payload;
                                         const y0 = maxY + maxHeight; // Base (zero-line)
 
                                         return (
                                             <g>
                                                 {visiblePackages.map((pkg) => {
-                                                    const val = viewMode === 'percent' 
-                                                        ? pkgStats[pkg.id]?.rateChangePercent || 0 
+                                                    const val = viewMode === 'percent'
+                                                        ? pkgStats[pkg.id]?.rateChangePercent || 0
                                                         : pkgStats[pkg.id]?.downloads || 0;
-                                                    
+
                                                     // Ratio = val / maxVal. Height = ratio * maxHeight.
                                                     const h = !maxVal ? 0 : (Math.abs(val) / maxVal) * maxHeight;
-                                                    const y = y0 - h; 
-                                                    
+                                                    const y = y0 - h;
+
                                                     const originalIndex = packages.findIndex(p => p.id === pkg.id);
                                                     const color = packageColors[originalIndex % packageColors.length];
 
@@ -346,7 +377,7 @@ export const StatChart: FC<StatChartProps> = ({ data, packages, visiblePackages,
                                                             height={h}
                                                             fill="none"
                                                             stroke={color}
-                                                            strokeWidth={1}
+                                                            strokeWidth={1.5}
                                                             rx={2}
                                                             ry={2}
                                                         />
