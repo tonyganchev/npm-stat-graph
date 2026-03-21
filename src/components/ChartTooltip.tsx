@@ -16,7 +16,7 @@ const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num)
 export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePackages, packages, viewMode }) => {
     if (active && payload && payload.length) {
         const dataPoint = payload[0].payload;
-        const isBarChart = payload.some((p: any) => p.dataKey === 'maxVal');
+        const isBarChart = payload.some((p: any) => p.dataKey === 'absMax');
         
         let displayItems = [];
         if (isBarChart && dataPoint.pkgStats) {
