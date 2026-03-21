@@ -49,14 +49,35 @@ export function calculateDateRange(rangeType: DateRangeType): { start: string, e
   return { start, end };
 }
 
+const apiCache = new Map<string, { data: NpmStatsResponse, timestamp: number }>();
+const CACHE_EXPIRY = 10 * 60 * 1000; // 10 minutes
+
+async function fetchWithCache(url: string, isImmutable: boolean): Promise<NpmStatsResponse> {
+  const cached = apiCache.get(url);
+  if (cached) {
+    const isExpired = Date.now() - cached.timestamp > CACHE_EXPIRY;
+    if (isImmutable || !isExpired) {
+      return cached.data;
+    }
+  }
+
+  const response = await fetch(url);
+  if (!response.ok) {
+    if (response.status === 404) return { downloads: [] } as any;
+    throw new Error(`HTTP ${response.status}`);
+  }
+
+  const data = await response.json();
+  apiCache.set(url, { data, timestamp: Date.now() });
+  return data;
+}
+
 export async function fetchPackageStats(
   packageName: string,
   rangeType: DateRangeType,
   customStart?: string,
   customEnd?: string
 ): Promise<NpmStatsResponse> {
-  // Always prioritize passed dates if provided, or use rangeType to calculate them.
-  // The user wants the logic to be centered around the from-to dates.
   let exactStart = customStart || "";
   let exactEnd = customEnd || "";
 
@@ -68,9 +89,8 @@ export async function fetchPackageStats(
 
   const encodedPackageName = encodeURIComponent(packageName);
   const baseUrl = import.meta.env?.DEV ? '/api/npm' : 'https://api.npmjs.org';
+  const todayStr = new Date().toISOString().split('T')[0];
 
-  // Splitting by calendar year instead of arbitrary 540-day chunks maximizes cache hits,
-  // since past full years (Jan 1 to Dec 31) are permanently cacheable.
   const startYear = parseInt(exactStart.substring(0, 4), 10);
   const endYear = parseInt(exactEnd.substring(0, 4), 10);
   const intervals: { start: string, end: string }[] = [];
@@ -78,10 +98,8 @@ export async function fetchPackageStats(
   for (let y = startYear; y <= endYear; y++) {
     const isFirstYear = y === startYear;
     const isLastYear = y === endYear;
-
     const start = isFirstYear ? exactStart : `${y}-01-01`;
     const end = isLastYear ? exactEnd : `${y}-12-31`;
-
     intervals.push({ start, end });
   }
 
@@ -90,18 +108,12 @@ export async function fetchPackageStats(
 
   for (const interval of intervals) {
     const url = `${baseUrl}/downloads/range/${interval.start}:${interval.end}/${encodedPackageName}`;
-    try {
-      const response = await fetch(url);
+    const isImmutable = interval.end < todayStr;
 
-      if (response.ok) {
-        const data: NpmStatsResponse = await response.json();
-        if (data && data.downloads) {
-          allDownloads.push(...data.downloads);
-        }
-      } else if (response.status === 404) {
-        // If historical chunk 404s, it might mean the package didn't exist yet, we just gracefully continue.
-      } else {
-        fetchError = `Failed to fetch interval ${interval.start} to ${interval.end}: HTTP ${response.status}`;
+    try {
+      const data = await fetchWithCache(url, isImmutable);
+      if (data && data.downloads) {
+        allDownloads.push(...data.downloads);
       }
     } catch (err: any) {
       fetchError = `Failed to fetch interval ${interval.start} to ${interval.end}: ${err.message || String(err)}`;
