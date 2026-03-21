@@ -38,6 +38,9 @@ export const BarChartView: FC<BarChartViewProps> = ({
     chartWidth,
     height
 }) => {
+    const globalMin = Math.min(...chartData.map(d => typeof d.displayMin === 'number' ? d.displayMin : 0), 0);
+    const globalMax = Math.max(...chartData.map(d => typeof d.displayMax === 'number' ? d.displayMax : 0), 1);
+
     return (
         <BarChart
             data={chartData}
@@ -100,6 +103,10 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 minTickGap={30}
             />
             <YAxis
+                domain={[
+                    (dataMin: number) => Math.min(dataMin, globalMin),
+                    (dataMax: number) => Math.max(dataMax, globalMax)
+                ]}
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
                 tickFormatter={(value) => {
@@ -123,14 +130,10 @@ export const BarChartView: FC<BarChartViewProps> = ({
 
             {viewMode === 'percent' && (
                 <>
-                    <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
+                    <ReferenceArea y1={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
                     <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
                 </>
             )}
-
-            {/* Dummy bars to expand the coordinate system to include the full data range */}
-            <Bar dataKey="displayMax" hide={true} isAnimationActive={false} />
-            <Bar dataKey="displayMin" hide={true} isAnimationActive={false} />
 
             <Bar
                 key={`bar-series-${visiblePackages.map(p => p.id).join(',')}-${viewMode}`}

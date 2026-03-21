@@ -78,7 +78,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
 
             {viewMode === 'percent' && (
                 <>
-                    <ReferenceArea y2={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
+                    <ReferenceArea y1={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
                     <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
                 </>
             )}
