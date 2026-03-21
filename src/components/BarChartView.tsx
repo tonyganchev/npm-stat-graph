@@ -125,9 +125,12 @@ export const BarChartView: FC<BarChartViewProps> = ({
             <Bar dataKey="displayMin" hide={true} isAnimationActive={false} />
 
             <Bar
+                key={`bar-series-${visiblePackages.map(p => p.id).join(',')}-${viewMode}`}
                 dataKey="absMax"
                 fill="none"
-                isAnimationActive={false}
+                isAnimationActive={true}
+                animationDuration={200}
+                animationEasing="ease-in-out"
                 shape={(props: any) => {
                     const { x, width, y: maxY, height: maxHeight, payload } = props;
                     if (!payload || !payload.pkgStats) return null as any;
