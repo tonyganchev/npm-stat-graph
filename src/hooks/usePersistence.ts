@@ -3,7 +3,7 @@ import { AppState } from '../types';
 import { DateRangeType, calculateDateRange } from '../api/npmApi';
 import { defaultPackage } from '../utils';
 
-const STORAGE_KEY = 'npm-stats-state';
+const STORAGE_KEY = 'npm-stat-graph-state';
 
 export function usePersistence() {
     const loadInitialState = (): AppState => {

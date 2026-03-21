@@ -84,7 +84,7 @@ function App() {
             <header>
                 <h1>
                     <TrendingUp className="header-icon" size={40} />
-                    npm-stat-plan
+                    npm-stat-graph
                 </h1>
             </header>
 
