@@ -55,10 +55,10 @@ export const StatChart: FC<StatChartProps> = ({
             });
 
             // Add max value for domain calculation
-            const statsArray = Object.values(newItem.pkgStats) as { downloads: number, rateChangePercent: number }[];
+            const relevantStats = visiblePackages.map(p => newItem.pkgStats[p.id]);
             const vals = viewMode === 'percent' 
-                ? statsArray.map(s => s.rateChangePercent) 
-                : statsArray.map(s => s.downloads);
+                ? relevantStats.map(s => s?.rateChangePercent || 0) 
+                : relevantStats.map(s => s?.downloads || 0);
             
             newItem.absMax = Math.max(...vals.map(v => Math.abs(v)), 1);
             newItem.displayMax = Math.max(...vals, 1);
@@ -66,7 +66,7 @@ export const StatChart: FC<StatChartProps> = ({
 
             return newItem;
         });
-    }, [data, groupBy, packages, enabledDays, viewMode]);
+    }, [data, groupBy, packages, visiblePackages, enabledDays, viewMode]);
 
     const packageSortValues = useMemo(() => {
         const values: { [id: string]: number } = {};
