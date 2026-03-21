@@ -86,6 +86,8 @@ export const LineChartView: FC<LineChartViewProps> = ({
                         name={pkg.name}
                         stroke={color}
                         strokeWidth={1.5}
+                        animationDuration={1500}
+                        animationEasing="ease-in-out"
                         dot={showDots ? { r: 3, fill: "var(--card-bg)", stroke: color, strokeWidth: 1.5 } : false}
                         activeDot={{ r: 4, fill: color, stroke: "var(--text-primary)", strokeWidth: 1.5 }}
                     />
