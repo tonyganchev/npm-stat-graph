@@ -1,3 +1,11 @@
+/**
+ * @copyright 2026 Tony Ganchev
+ * @license MIT
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ */
+
 /// <reference types="vite/client" />
 import { format, subMonths, startOfDay, addDays, startOfYear, startOfMonth, startOfWeek } from 'date-fns';
 
@@ -52,7 +60,7 @@ export function calculateDateRange(rangeType: DateRangeType): { start: string, e
 const apiCache = new Map<string, { data: NpmStatsResponse, timestamp: number }>();
 const CACHE_EXPIRY = 10 * 60 * 1000; // 10 minutes
 
-async function fetchWithCache(url: string, isImmutable: boolean): Promise<NpmStatsResponse> {
+async function fetchWithCache(url: string, isImmutable: boolean): Promise<Partial<NpmStatsResponse>> {
   const cached = apiCache.get(url);
   if (cached) {
     const isExpired = Date.now() - cached.timestamp > CACHE_EXPIRY;
@@ -63,7 +71,9 @@ async function fetchWithCache(url: string, isImmutable: boolean): Promise<NpmSta
 
   const response = await fetch(url);
   if (!response.ok) {
-    if (response.status === 404) return { downloads: [] } as any;
+    if (response.status === 404) {
+      return { downloads: [] };
+    }
     throw new Error(`HTTP ${response.status}`);
   }
 

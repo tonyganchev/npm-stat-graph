@@ -1,4 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+/**
+ * @copyright 2026 Tony Ganchev
+ * @license MIT
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ */
+
+import { useState, useEffect, useRef, CSSProperties } from 'react';
 
 interface AutocompleteInputProps {
     value: string;
@@ -6,7 +14,7 @@ interface AutocompleteInputProps {
     onBlur?: () => void;
     placeholder: string;
     disabled: boolean;
-    style?: React.CSSProperties;
+    style?: CSSProperties;
 }
 
 export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onChange, onBlur, placeholder, disabled, style }) => {
@@ -41,10 +49,8 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
                         setSuggestions(data.objects.map((obj: any) => obj.package.name));
                     }
                 }
-            } catch (err) {
+            } catch {
                 // Ignore silent errors for autocomplete
-            } finally {
-
             }
         };
 

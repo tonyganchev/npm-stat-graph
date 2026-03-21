@@ -1,17 +1,16 @@
-import { FC } from 'react';
+/**
+ * @copyright 2026 Tony Ganchev
+ * @license MIT
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ */
 
-export const DAYS_OF_WEEK = [
-    { label: 'Sun', value: 0 },
-    { label: 'Mon', value: 1 },
-    { label: 'Tue', value: 2 },
-    { label: 'Wed', value: 3 },
-    { label: 'Thu', value: 4 },
-    { label: 'Fri', value: 5 },
-    { label: 'Sat', value: 6 },
-];
+import { FC } from 'react';
 
 import { ViewMode, ChartType } from '../types';
 import { BarChart3, Percent, LineChart as LineChartIcon, BarChart2 } from 'lucide-react';
+import { DAYS_OF_WEEK } from '../utils';
 
 interface DayFilterProps {
     enabledDays: number[];

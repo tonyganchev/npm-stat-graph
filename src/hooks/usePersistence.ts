@@ -1,5 +1,13 @@
+/**
+ * @copyright 2026 Tony Ganchev
+ * @license MIT
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ */
+
 import { useState, useCallback } from 'react';
-import { AppState } from '../types';
+import { AppState, ChartType, ViewMode } from '../types';
 import { DateRangeType, calculateDateRange } from '../api/npmApi';
 import { defaultPackage } from '../utils';
 
@@ -29,8 +37,8 @@ export function usePersistence() {
                 customStart: getParam('customStart') || '',
                 customEnd: getParam('customEnd') || '',
                 enabledDays: urlDays || [0, 1, 2, 3, 4, 5, 6],
-                viewMode: (getParam('viewMode') as any) || 'absolute',
-                chartType: (getParam('chartType') as any) || 'line'
+                viewMode: ['absolute', 'percent'].includes(getParam('viewMode') as string) ? getParam('viewMode') as ViewMode : 'absolute',
+                chartType: ['line', 'bar'].includes(getParam('chartType') as string) ? getParam('chartType') as ChartType : 'line'
             };
         } else {
             const saved = localStorage.getItem(STORAGE_KEY);

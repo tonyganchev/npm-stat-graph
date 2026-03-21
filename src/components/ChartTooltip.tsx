@@ -1,3 +1,11 @@
+/**
+ * @copyright 2026 Tony Ganchev
+ * @license MIT
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ */
+
 import { Fragment, FC } from 'react';
 import { PackageConfig, ViewMode } from '../types';
 import { packageColors } from '../utils';

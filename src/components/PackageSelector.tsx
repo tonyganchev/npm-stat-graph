@@ -1,4 +1,12 @@
-import React, { FC, useState } from 'react';
+/**
+ * @copyright 2026 Tony Ganchev
+ * @license MIT
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ */
+
+import { CSSProperties, FC, useState } from 'react';
 import { Plus, Eye, EyeOff, X, ArrowUpDown } from 'lucide-react';
 import { PackageConfig } from '../types';
 import { packageColors } from '../utils';
@@ -68,7 +76,7 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
                         style={{
                             '--pkg-color': packageColors[i % packageColors.length],
                             opacity: pkg.visible ? 1 : 0.5
-                        } as React.CSSProperties}
+                        } as CSSProperties}
                     />
 
                     <button type="button" className="btn-icon" onClick={() => toggleVisibility(i)} title="Toggle Visibility">

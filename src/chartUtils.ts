@@ -1,3 +1,11 @@
+/**
+ * @copyright 2026 Tony Ganchev
+ * @license MIT
+ *
+ * This source code is licensed under the MIT license found in the
+ * LICENSE.md file in the root directory of this source tree.
+ */
+
 import { format, parseISO, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
 import { CombinedData, GroupBy, PackageConfig } from './types';
 
@@ -21,7 +29,7 @@ export function groupChartData(
         });
     }
 
-    const groupedMap = new Map<string, any>();
+    const groupedMap = new Map<string, anu>();
 
     data.forEach(item => {
         const dateObj = parseISO(item.day);
