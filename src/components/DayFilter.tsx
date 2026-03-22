@@ -10,7 +10,7 @@ import { FC } from 'react';
 
 import { ViewMode, ChartType } from '../types';
 import { BarChart3, Percent, LineChart as LineChartIcon, BarChart2 } from 'lucide-react';
-import { DAYS_OF_WEEK } from '../utils';
+import { daysOfWeek } from '../utils';
 
 interface DayFilterProps {
     enabledDays: number[];
@@ -37,7 +37,7 @@ export const DayFilter: FC<DayFilterProps> = ({
     return (
         <div className="filter-panel">
             <div className="filter-chips">
-                {DAYS_OF_WEEK.map((day) => {
+                {daysOfWeek.map((day) => {
                     const isActive = enabledDays.includes(day.value);
                     return (
                         <button

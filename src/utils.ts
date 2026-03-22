@@ -9,7 +9,7 @@
 import { PackageConfig } from './types';
 
 export const defaultPackage = 'react';
-export const MIN_DATE = '2010-01-12';
+export const minDate = '2010-01-12';
 
 export const packageColors = [
     '#f472b6', // Pink
@@ -22,7 +22,7 @@ export const packageColors = [
     '#fb923c'  // Orange
 ];
 
-export const DAYS_OF_WEEK = [
+export const daysOfWeek = [
     { label: 'Sun', value: 0 },
     { label: 'Mon', value: 1 },
     { label: 'Tue', value: 2 },

@@ -24,7 +24,7 @@ export interface NpmStatsResponse {
 
 export type DateRangeType = "last-7-days" | "last-30-days" | "last-quarter" | "last-6-months" | "last-year" | "last-2-years" | "last-5-years" | "last-10-years" | "ytd" | "mtd" | "wtd" | "custom";
 
-import { MIN_DATE } from '../utils';
+import { minDate } from '../utils';
 
 export function calculateDateRange(rangeType: DateRangeType): { start: string, end: string } {
   const today = startOfDay(new Date());
@@ -56,9 +56,9 @@ export function calculateDateRange(rangeType: DateRangeType): { start: string, e
     start = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
   }
 
-  // Cap at MIN_DATE
-  if (start && start < MIN_DATE) {
-    start = MIN_DATE;
+  // Cap at minDate
+  if (start && start < minDate) {
+    start = minDate;
   }
 
   return { start, end };
