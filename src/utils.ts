@@ -9,6 +9,7 @@
 import { PackageConfig } from './types';
 
 export const defaultPackage = 'react';
+export const MIN_DATE = '2010-01-12';
 
 export const packageColors = [
     '#f472b6', // Pink

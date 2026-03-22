@@ -8,6 +8,7 @@
 
 import { FC } from 'react';
 import { DateRangeType } from '../types';
+import { MIN_DATE } from '../utils';
 
 interface DateRangeSelectorProps {
     range: DateRangeType;
@@ -65,6 +66,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                     className="input"
                     value={customStart}
                     onChange={(e) => { setCustomStart(e.target.value); setRange('custom'); }}
+                    min={MIN_DATE}
                     disabled={isLoading}
                 />
                 <span className="date-separator">to</span>
@@ -73,6 +75,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                     className="input"
                     value={customEnd}
                     onChange={(e) => { setCustomEnd(e.target.value); setRange('custom'); }}
+                    min={MIN_DATE}
                     disabled={isLoading}
                 />
             </div>
