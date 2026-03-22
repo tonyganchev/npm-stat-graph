@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { useMemo, useState, useRef, useEffect, FC } from 'react';
+import { useMemo, useState, useRef, useEffect, FC, memo } from 'react';
 import { parseISO, getDay } from 'date-fns';
 import { CombinedData, GroupBy, PackageConfig, ViewMode, ChartType, ChartDataPoint } from '../types';
 import { Activity } from 'lucide-react';
@@ -25,7 +25,7 @@ interface StatChartProps {
     chartType: ChartType;
 }
 
-export const StatChart: FC<StatChartProps> = ({ 
+export const StatChart = memo(({ 
     data, 
     packages, 
     visiblePackages, 
@@ -33,7 +33,7 @@ export const StatChart: FC<StatChartProps> = ({
     enabledDays, 
     viewMode, 
     chartType 
-}) => {
+}: StatChartProps) => {
     const chartData = useMemo(() => {
         if (!data || data.length === 0) {
             return [];
@@ -202,4 +202,4 @@ export const StatChart: FC<StatChartProps> = ({
             </div>
         </div>
     );
-};
+});

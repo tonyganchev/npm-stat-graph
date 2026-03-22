@@ -54,7 +54,7 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
 
     const updatePackageName = (index: number, val: string) => {
         const newPkgs = [...packages];
-        newPkgs[index].name = val.trim();
+        newPkgs[index].name = val;
         setPackages(newPkgs);
     };
 
@@ -74,7 +74,7 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
                         value={pkg.name}
                         onChange={(val: string) => updatePackageName(i, val)}
                         placeholder={`Package ${i + 1} name`}
-                        disabled={isLoading}
+                        disabled={false}
                         style={{
                             '--pkg-color': packageColors[i % packageColors.length],
                             opacity: pkg.visible ? 1 : 0.5
