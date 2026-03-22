@@ -694,3 +694,38 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
+
+/* Footer */
+.app-footer {
+  margin-top: auto;
+  padding: 1.5rem 2rem;
+  border-top: 1px solid var(--card-border);
+  text-align: center;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.footer-content p {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  opacity: 0.8;
+  letter-spacing: 0.05rem;
+  margin: 0;
+}
+
+.github-link {
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
+  display: flex;
+  opacity: 0.7;
+}
+
+.github-link:hover {
+  color: var(--text-primary);
+  opacity: 1;
+}

@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useDeferredValue } from 'react';
-import { TrendingUp, AlertCircle } from 'lucide-react';
+import { TrendingUp, AlertCircle, Github } from 'lucide-react';
 import { SearchControls } from './components/SearchControls';
 import { StatChart } from './components/StatChart';
 import { DayFilter } from './components/DayFilter';
@@ -154,6 +154,14 @@ function App() {
                     </div>
                 )}
             </main>
+            <footer className="app-footer">
+                <div className="footer-content">
+                    <p>&copy; 2026 Tony Ganchev. Licensed under the MIT License.</p>
+                    <a href="https://github.com/tonyganchev/npm-stat-graph" target="_blank" rel="noopener noreferrer" className="github-link" title="GitHub Repository">
+                        <Github size={18} />
+                    </a>
+                </div>
+            </footer>
         </div>
     );
 }
