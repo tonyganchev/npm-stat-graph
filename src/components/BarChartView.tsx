@@ -59,9 +59,11 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 stroke="var(--text-secondary)"
                 interval={0} // Process every tick to calculate boundaries accurately
                 tickLine={false}
-                tick={(props: { x?: number, y?: number, payload?: { value?: string | number }, index?: number, width?: number }) => {
-                    const { x = 0, y = 0, payload, index = 0, width: propWidth } = props;
-                    const axisWidth = propWidth || chartWidth || 0;
+                tick={(props: { x?: string | number, y?: string | number, payload?: { value?: string | number }, index?: number, width?: string | number }) => {
+                    const { x: propX = 0, y: propY = 0, payload, index = 0, width: propWidth = 0 } = props;
+                    const x = Number(propX);
+                    const y = Number(propY);
+                    const axisWidth = Number(propWidth) || chartWidth || 0;
                     // Precise bandwidth calculation based on the tracked container width
                     const bandwidth = chartData.length > 0 ? axisWidth / chartData.length : 0;
                     
@@ -130,7 +132,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
 
             {viewMode === 'percent' && (
                 <>
-                    <ReferenceArea y1={0} fill="rgba(239, 68, 68, 0.25)" isFront={false} />
+                    <ReferenceArea y1={0} fill="rgba(239, 68, 68, 0.25)" />
                     <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
                 </>
             )}
