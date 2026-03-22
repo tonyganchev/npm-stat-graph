@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { useMemo, useState, useRef, useEffect, FC, memo } from 'react';
+import { useMemo, useState, useRef, useEffect, memo } from 'react';
 import { parseISO, getDay } from 'date-fns';
 import { CombinedData, GroupBy, PackageConfig, ViewMode, ChartType, ChartDataPoint } from '../types';
 import { Activity } from 'lucide-react';
