@@ -6,20 +6,25 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { defineConfig } from 'vite'
+import { defineConfig, type Connect } from 'vite'
 import react from '@vitejs/plugin-react'
+import type { ServerResponse } from 'node:http'
 
-// Simple in-memory cache for dev server
 const apiCache = new Map();
 
-// https://vitejs.dev/config/
 export default defineConfig({
     plugins: [
         react(),
         {
             name: 'npm-api-cache',
             configureServer(server) {
-                const handleCachedRequest = async (req: any, res: any, targetBaseUrl: string, proxyPrefix: string, checkImmutable: boolean = false) => {
+                const cachedRequest = async (
+                    req: Connect.IncomingMessage,
+                    res: ServerResponse,
+                    targetBaseUrl: string,
+                    proxyPrefix: string,
+                    checkImmutable: boolean = false) => {
+
                     try {
                         const urlPath = req.originalUrl?.replace(proxyPrefix, '') || '';
                         const targetUrl = `${targetBaseUrl}${urlPath}`;
@@ -69,8 +74,14 @@ export default defineConfig({
                     }
                 };
 
-                server.middlewares.use('/api/npm', (req, res) => handleCachedRequest(req, res, 'https://api.npmjs.org', '/api/npm', true));
-                server.middlewares.use('/api/search', (req, res) => handleCachedRequest(req, res, 'https://registry.npmjs.org/-/v1/search', '/api/search', false));
+                server.middlewares.use(
+                    '/api/npm',
+                    (req, res) =>
+                        cachedRequest(req, res, 'https://api.npmjs.org', '/api/npm', true));
+                server.middlewares.use(
+                    '/api/search',
+                    (req, res) =>
+                        cachedRequest(req, res, 'https://registry.npmjs.org/-/v1/search', '/api/search', false));
             }
         }
     ],

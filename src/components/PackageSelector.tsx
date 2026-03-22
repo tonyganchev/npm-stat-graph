@@ -42,7 +42,9 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
     };
 
     const movePackage = (index: number, direction: -1 | 1) => {
-        if (index + direction < 0 || index + direction >= packages.length) return;
+        if (index + direction < 0 || index + direction >= packages.length) {
+            return;
+        }
         const newPkgs = [...packages];
         const temp = newPkgs[index];
         newPkgs[index] = newPkgs[index + direction];

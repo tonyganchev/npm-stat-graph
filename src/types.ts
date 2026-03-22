@@ -21,6 +21,17 @@ export interface CombinedData {
     packages: { [pkgId: string]: number };
 }
 
+export interface ChartDataPoint {
+    day: string;
+    formattedDate: string;
+    shortDate: string;
+    pkgStats: Record<string, { downloads: number, rateChangePercent: number }>;
+    absMax: number;
+    displayMax: number;
+    displayMin: number;
+    metrics: Record<string, number>;
+}
+
 export type GroupBy = "day" | "week" | "month" | "year";
 
 export type ViewMode = "absolute" | "percent";

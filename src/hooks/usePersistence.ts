@@ -19,9 +19,14 @@ export function usePersistence() {
         
         const getParam = (key: string) => params.get(key);
         const parseJSON = (str: string | null) => {
-            if (!str) return null;
-            try { return JSON.parse(decodeURIComponent(str)); }
-            catch { return null; }
+            if (!str) {
+                return null;
+            }
+            try {
+                return JSON.parse(decodeURIComponent(str));
+            } catch {
+                return null;
+            }
         };
 
         const urlPkgs = parseJSON(getParam('packages'));
@@ -45,7 +50,9 @@ export function usePersistence() {
             if (saved) {
                 try {
                     const parsed = JSON.parse(saved);
-                    if (parsed.packages?.length > 0) state = parsed;
+                    if (parsed.packages?.length > 0) {
+                        state = parsed;
+                    }
                 } catch { }
             }
         }

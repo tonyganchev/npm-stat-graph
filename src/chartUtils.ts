@@ -7,7 +7,7 @@
  */
 
 import { format, parseISO, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
-import { CombinedData, GroupBy, PackageConfig } from './types';
+import { ChartDataPoint, CombinedData, GroupBy, PackageConfig } from './types';
 
 export function groupChartData(
     data: CombinedData[], 
@@ -17,19 +17,24 @@ export function groupChartData(
     if (groupBy === 'day') {
         return data.map(item => {
             const dateObj = parseISO(item.day);
-            const dayItem: any = {
+            const dayItem: ChartDataPoint = {
                 day: item.day,
                 formattedDate: format(dateObj, 'MMM d, yyyy'),
                 shortDate: format(dateObj, 'MMM d'),
+                pkgStats: {},
+                metrics: {},
+                absMax: 0,
+                displayMax: 0,
+                displayMin: 0
             };
             packages.forEach(p => {
-                dayItem[p.id] = item.packages[p.id] || 0;
+                dayItem.metrics[p.id] = item.packages[p.id] || 0;
             });
             return dayItem;
         });
     }
 
-    const groupedMap = new Map<string, anu>();
+    const groupedMap = new Map<string, ChartDataPoint>();
 
     data.forEach(item => {
         const dateObj = parseISO(item.day);
@@ -56,15 +61,20 @@ export function groupChartData(
             groupedMap.set(key, {
                 day: key,
                 formattedDate: format(groupStart, fmt),
-                shortDate: format(groupStart, shortFmt)
+                shortDate: format(groupStart, shortFmt),
+                pkgStats: {},
+                metrics: {},
+                absMax: 0,
+                displayMax: 0,
+                displayMin: 0
             });
-            packages.forEach(p => groupedMap.get(key)![p.id] = 0);
+            packages.forEach(p => groupedMap.get(key)!.metrics[p.id] = 0);
         }
 
         const current = groupedMap.get(key)!;
         packages.forEach(p => {
             if (item.packages[p.id]) {
-                current[p.id] += item.packages[p.id];
+                current.metrics[p.id] += item.packages[p.id];
             }
         });
     });

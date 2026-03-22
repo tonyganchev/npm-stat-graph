@@ -17,12 +17,12 @@ import {
     ReferenceArea,
     ReferenceLine
 } from 'recharts';
-import { PackageConfig, ViewMode } from '../types';
+import { PackageConfig, ViewMode, ChartDataPoint } from '../types';
 import { packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 
 interface LineChartViewProps {
-    chartData: any[];
+    chartData: ChartDataPoint[];
     visiblePackages: PackageConfig[];
     packages: PackageConfig[];
     viewMode: ViewMode;
@@ -90,7 +90,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
                     <Line
                         key={pkg.id}
                         type="monotone"
-                        dataKey={pkg.id}
+                        dataKey={(data: ChartDataPoint) => data.metrics?.[pkg.id]}
                         name={pkg.name}
                         stroke={color}
                         strokeWidth={1.5}

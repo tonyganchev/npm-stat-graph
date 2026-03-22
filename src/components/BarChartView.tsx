@@ -17,12 +17,12 @@ import {
     ReferenceArea,
     ReferenceLine
 } from 'recharts';
-import { PackageConfig, ViewMode } from '../types';
+import { PackageConfig, ViewMode, ChartDataPoint } from '../types';
 import { packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 
 interface BarChartViewProps {
-    chartData: any[];
+    chartData: ChartDataPoint[];
     visiblePackages: PackageConfig[];
     packages: PackageConfig[];
     viewMode: ViewMode;
@@ -59,8 +59,8 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 stroke="var(--text-secondary)"
                 interval={0} // Process every tick to calculate boundaries accurately
                 tickLine={false}
-                tick={(props: any) => {
-                    const { x, y, payload, index, width: propWidth } = props;
+                tick={(props: { x?: number, y?: number, payload?: { value?: string | number }, index?: number, width?: number }) => {
+                    const { x = 0, y = 0, payload, index = 0, width: propWidth } = props;
                     const axisWidth = propWidth || chartWidth || 0;
                     // Precise bandwidth calculation based on the tracked container width
                     const bandwidth = chartData.length > 0 ? axisWidth / chartData.length : 0;
@@ -87,7 +87,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
                             
                             {showLabel && (
                                 <text dy={20} textAnchor="middle" fill="var(--text-secondary)" fontSize={11}>
-                                    {payload.value}
+                                    {payload?.value}
                                 </text>
                             )}
                             
@@ -142,9 +142,11 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 isAnimationActive={true}
                 animationDuration={200}
                 animationEasing="ease-in-out"
-                shape={(props: any) => {
-                    const { x, width, y: maxY, height: maxHeight, payload } = props;
-                    if (!payload || !payload.pkgStats) return null as any;
+                shape={(props: { x?: number, y?: number, width?: number, height?: number, payload?: { pkgStats?: Record<string, { downloads: number, rateChangePercent: number }>, absMax?: number } }) => {
+                    const { x = 0, width = 0, y: maxY = 0, height: maxHeight = 0, payload } = props;
+                    if (!payload || !payload.pkgStats) {
+                        return <g></g>;
+                    }
 
                     const { pkgStats, absMax } = payload;
                     const y0 = maxY + maxHeight; // Base (zero-line)

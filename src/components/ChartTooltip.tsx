@@ -7,12 +7,22 @@
  */
 
 import { Fragment, FC } from 'react';
-import { PackageConfig, ViewMode } from '../types';
+import { PackageConfig, ViewMode, ChartDataPoint } from '../types';
 import { packageColors } from '../utils';
+
+interface TooltipPayloadItem {
+    dataKey?: string | number;
+    name?: string;
+    value?: number;
+    payload: ChartDataPoint;
+    color?: string;
+    stroke?: string;
+    fill?: string;
+}
 
 interface ChartTooltipProps {
     active?: boolean;
-    payload?: any[];
+    payload?: TooltipPayloadItem[];
     label?: string;
     visiblePackages: PackageConfig[];
     packages: PackageConfig[];
@@ -24,9 +34,9 @@ const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num)
 export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePackages, packages, viewMode }) => {
     if (active && payload && payload.length) {
         const dataPoint = payload[0].payload;
-        const isBarChart = payload.some((p: any) => p.dataKey === 'absMax');
+        const isBarChart = payload.some((p: TooltipPayloadItem) => p.dataKey === 'absMax');
         
-        let displayItems = [];
+        let displayItems: TooltipPayloadItem[] = [];
         if (isBarChart && dataPoint.pkgStats) {
             displayItems = visiblePackages.map(pkg => {
                 const stats = dataPoint.pkgStats[pkg.id] || { downloads: 0, rateChangePercent: 0 };
@@ -40,10 +50,14 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                 };
             });
         } else {
-            displayItems = payload.map((p: any) => ({
-                ...p,
-                color: p.stroke || p.color || p.fill
-            }));
+            displayItems = payload.map((p: TooltipPayloadItem) => {
+                const matchedPkg = packages.find(pkg => pkg.name === p.name);
+                return {
+                    ...p,
+                    dataKey: matchedPkg ? matchedPkg.id : p.dataKey,
+                    color: p.stroke || p.color || p.fill
+                };
+            });
         }
 
         const sortedItems = [...displayItems].sort((a, b) => (b.value || 0) - (a.value || 0));
@@ -52,8 +66,8 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
             <div className="custom-tooltip">
                 <p className="stat-label custom-tooltip-label">{dataPoint.formattedDate}</p>
                 <div className="tooltip-grid">
-                    {sortedItems.map((entry: any, index: number) => {
-                        const pkgId = entry.dataKey;
+                    {sortedItems.map((entry: TooltipPayloadItem, index: number) => {
+                        const pkgId = entry.dataKey as string;
                         const stats = entry.payload.pkgStats?.[pkgId] || { downloads: 0, rateChangePercent: 0 };
                         const { downloads: abs, rateChangePercent: pct } = stats;
                         const pctColor = pct > 0 ? '#10b981' : pct < 0 ? '#ff5252' : '#94a3b8';

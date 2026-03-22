@@ -8,7 +8,7 @@
 
 import { useMemo, useState, useRef, useEffect, FC } from 'react';
 import { parseISO, getDay } from 'date-fns';
-import { CombinedData, GroupBy, PackageConfig, ViewMode, ChartType } from '../types';
+import { CombinedData, GroupBy, PackageConfig, ViewMode, ChartType, ChartDataPoint } from '../types';
 import { Activity } from 'lucide-react';
 import { packageColors } from '../utils';
 import { groupChartData } from '../chartUtils';
@@ -35,22 +35,25 @@ export const StatChart: FC<StatChartProps> = ({
     chartType 
 }) => {
     const chartData = useMemo(() => {
-        if (!data || data.length === 0) return [];
+        if (!data || data.length === 0) {
+            return [];
+        }
         const filteredData = data.filter(item => enabledDays.includes(getDay(parseISO(item.day))));
         const grouped = groupChartData(filteredData, groupBy, packages);
 
-        return grouped.map((item: any, index: number, self: any[]) => {
+        return grouped.map((item: ChartDataPoint, index: number, self: ChartDataPoint[]) => {
             const newItem = {
                 ...item,
-                pkgStats: {} as Record<string, { downloads: number, rateChangePercent: number }>
-            };
+                pkgStats: {} as Record<string, { downloads: number, rateChangePercent: number }>,
+                metrics: { ...item.metrics } 
+            } as ChartDataPoint;
             const prev = index > 0 ? self[index - 1] : null;
 
             packages.forEach(p => {
-                const abs = item[p.id] || 0;
+                const abs = item.metrics[p.id] || 0;
                 let pct = 0;
                 if (prev) {
-                    const prevAbs = prev[p.id] || 0;
+                    const prevAbs = prev.metrics[p.id] || 0;
                     if (prevAbs === 0) {
                         pct = abs > 0 ? 100 : 0;
                     } else {
@@ -59,7 +62,7 @@ export const StatChart: FC<StatChartProps> = ({
                 }
 
                 newItem.pkgStats[p.id] = { downloads: abs, rateChangePercent: pct };
-                newItem[p.id] = viewMode === 'percent' ? pct : abs;
+                newItem.metrics[p.id] = viewMode === 'percent' ? pct : abs;
             });
 
             // Add max value for domain calculation
@@ -104,7 +107,9 @@ export const StatChart: FC<StatChartProps> = ({
     const [chartWidth, setChartWidth] = useState<number>(0);
 
     useEffect(() => {
-        if (!chartContainerRef.current) return;
+        if (!chartContainerRef.current) {
+            return;
+        }
         const observer = new ResizeObserver((entries) => {
             if (entries[0]) {
                 setChartWidth(entries[0].contentRect.width);
@@ -115,7 +120,9 @@ export const StatChart: FC<StatChartProps> = ({
     }, []);
 
     const showDots = useMemo(() => {
-        if (!chartWidth || chartData.length <= 1) return true;
+        if (!chartWidth || chartData.length <= 1) {
+            return true;
+        }
         const plotWidth = chartWidth - 80;
         const distance = plotWidth / chartData.length;
         return distance >= 8;

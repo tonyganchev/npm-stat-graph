@@ -63,25 +63,20 @@ function App() {
 
             setData(mergedData);
             setPartialErrors(extractedErrors);
-        } catch (err: any) {
-            setError(err.message || 'Failed to fetch data');
+        } catch (err) {
+            setError((err as Error).message || 'Failed to fetch data');
             setData(null);
         } finally {
             setIsLoading(false);
         }
     }, [packages, range, customStart, customEnd]);
 
-    // Initial load
-    useEffect(() => {
-        handleSearch();
-    }, []);
-
-    // Reactive search only for time range preset/date selection
+    // Trigger search on mount and when parameters change
     useEffect(() => {
         if (range !== 'custom' || (customStart && customEnd)) {
             handleSearch();
         }
-    }, [range, customStart, customEnd]);
+    }, [handleSearch, range, customStart, customEnd]);
 
 
     // Filter out visible packages for charting

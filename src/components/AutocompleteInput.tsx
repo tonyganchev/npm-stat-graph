@@ -46,7 +46,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
                 if (res.ok) {
                     const data = await res.json();
                     if (data && data.objects) {
-                        setSuggestions(data.objects.map((obj: any) => obj.package.name));
+                        setSuggestions(data.objects.map((obj: { package: { name: string } }) => obj.package.name));
                     }
                 }
             } catch {
@@ -72,7 +72,9 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
                 }}
                 disabled={disabled}
                 onFocus={() => {
-                    if (suggestions.length > 0) setShowSuggestions(true);
+                    if (suggestions.length > 0) {
+                        setShowSuggestions(true);
+                    }
                 }}
                 onBlur={onBlur}
             />

@@ -125,8 +125,8 @@ export async function fetchPackageStats(
       if (data && data.downloads) {
         allDownloads.push(...data.downloads);
       }
-    } catch (err: any) {
-      fetchError = `Failed to fetch interval ${interval.start} to ${interval.end}: ${err.message || String(err)}`;
+    } catch (err) {
+      fetchError = `Failed to fetch interval ${interval.start} to ${interval.end}: ${(err as Error).message || String(err)}`;
     }
   }
 
