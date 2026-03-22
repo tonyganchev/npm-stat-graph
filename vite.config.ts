@@ -13,6 +13,7 @@ import type { ServerResponse } from 'node:http'
 const apiCache = new Map();
 
 export default defineConfig({
+    base: '/npm-stat-graph/',
     plugins: [
         react(),
         {
