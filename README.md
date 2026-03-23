@@ -1,11 +1,16 @@
+<img src="public/favicon.svg" width="40" height="40" alt="icon" style="float: left; margin-right: 10px" />
+
 # npm-stat-graph
 
 An interactive dashboard for visualizing download trends across multiple npm
 packages inspired by <https://npm-stat.com/charts.html>.
 
+[![GitHub Pages Deployment](https://github.com/tonyganchev/npm-stat-graph/actions/workflows/deploy.yml/badge.svg)](https://tonyganchev.github.io/npm-stat-graph/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Build with Vite](https://img.shields.io/badge/Vite-8.0-646CFF?logo=vite)](https://vitejs.dev/)
 [![Built with React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react)](https://react.dev/)
+
+🚀 **[Live Version](https://tonyganchev.github.io/npm-stat-graph/)**
 
 ## ✨ Features
 

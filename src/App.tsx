@@ -7,7 +7,7 @@
  */
 
 import { useState, useEffect, useCallback, useMemo, useDeferredValue } from 'react';
-import { TrendingUp, AlertCircle, Github } from 'lucide-react';
+import { AlertCircle, Github } from 'lucide-react';
 import { SearchControls } from './components/SearchControls';
 import { StatChart } from './components/StatChart';
 import { DayFilter } from './components/DayFilter';
@@ -96,7 +96,7 @@ function App() {
         <div className="app-container">
             <header>
                 <h1>
-                    <TrendingUp className="header-icon" size={40} />
+                    <img src={`${import.meta.env.BASE_URL}favicon.svg`} className="header-icon" alt="Logo" width={40} height={40} />
                     npm-stat-graph
                 </h1>
             </header>

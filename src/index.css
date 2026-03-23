@@ -105,7 +105,7 @@ header h1 {
   color: white;
   border: 1px solid var(--primary-color);
   padding: 0.75rem 1.5rem;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   font-family: inherit;
   font-size: 1rem;
   font-weight: 400;
@@ -198,7 +198,7 @@ header h1 {
 .input {
   background: var(--input-bg);
   border: 1px solid var(--card-border);
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   padding: 0.75rem 1rem;
   color: var(--text-primary);
   font-family: inherit;
@@ -330,7 +330,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   z-index: 10;
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   margin-top: 0.25rem;
   overflow: hidden;
   backdrop-filter: blur(12px);
@@ -398,7 +398,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .filter-chip {
   padding: 0.5rem 1rem;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   border: 1px solid var(--primary-color);
   background: var(--card-bg);
   color: white;
@@ -558,7 +558,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   color: var(--error-color);
   background: rgba(239, 68, 68, 0.1);
   padding: 1rem;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
@@ -577,7 +577,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   background: rgba(239, 68, 68, 0.05);
   padding: 1rem;
   margin-top: -1rem;
-  border-radius: 0.5rem;
+  border-radius: 0.25rem;
 }
 
 .partial-error-header {
@@ -639,7 +639,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 .custom-tooltip {
   background: rgba(15, 23, 42, 0.9) !important;
   border: 1px solid var(--card-border) !important;
-  border-radius: 0.5rem !important;
+  border-radius: 0.25rem !important;
   padding: 1rem !important;
   box-shadow: var(--shadow-lg) !important;
   backdrop-filter: blur(8px) !important;
