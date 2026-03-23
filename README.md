@@ -1,6 +1,4 @@
-<img src="public/favicon.svg" width="40" height="40" alt="icon" style="float: left; margin-right: 10px" />
-
-# npm-stat-graph
+# <img src="public/favicon.svg" width="40" height="40" alt="icon" style="float: left; margin-right: 10px" /> npm-stat-graph
 
 An interactive dashboard for visualizing download trends across multiple npm
 packages inspired by <https://npm-stat.com/charts.html>.
