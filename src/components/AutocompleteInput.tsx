@@ -40,8 +40,7 @@ export const AutocompleteInput: React.FC<AutocompleteInputProps> = ({ value, onC
             }
 
             try {
-                // Use dev proxy for search requests to enable caching
-                const baseUrl = import.meta.env?.DEV ? '/api/search' : 'https://registry.npmjs.org/-/v1/search';
+                const baseUrl = 'https://registry.npmjs.org/-/v1/search';
                 const res = await fetch(`${baseUrl}?text=${encodeURIComponent(value)}&size=5`);
                 if (res.ok) {
                     const data = await res.json();

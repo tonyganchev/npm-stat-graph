@@ -64,10 +64,16 @@ export function calculateDateRange(rangeType: DateRangeType): { start: string, e
   return { start, end };
 }
 
-const apiCache = new Map<string, { data: NpmStatsResponse, timestamp: number }>();
+interface NpmStatResponseData {
+  [pkg: string]: {
+    [date: string]: number;
+  };
+}
+
+const apiCache = new Map<string, { data: NpmStatResponseData, timestamp: number }>();
 const CACHE_EXPIRY = 10 * 60 * 1000; // 10 minutes
 
-async function fetchWithCache(url: string, isImmutable: boolean): Promise<Partial<NpmStatsResponse>> {
+async function fetchWithCache(url: string, isImmutable: boolean): Promise<NpmStatResponseData> {
   const cached = apiCache.get(url);
   if (cached) {
     const isExpired = Date.now() - cached.timestamp > CACHE_EXPIRY;
@@ -79,7 +85,7 @@ async function fetchWithCache(url: string, isImmutable: boolean): Promise<Partia
   const response = await fetch(url);
   if (!response.ok) {
     if (response.status === 404) {
-      return { downloads: [] };
+      return {};
     }
     throw new Error(`HTTP ${response.status}`);
   }
@@ -105,36 +111,32 @@ export async function fetchPackageStats(
   }
 
   const encodedPackageName = encodeURIComponent(packageName);
-  const baseUrl = import.meta.env?.DEV ? '/api/npm' : 'https://api.npmjs.org';
-  const todayStr = new Date().toISOString().split('T')[0];
-
-  const startYear = parseInt(exactStart.substring(0, 4), 10);
-  const endYear = parseInt(exactEnd.substring(0, 4), 10);
-  const intervals: { start: string, end: string }[] = [];
-
-  for (let y = startYear; y <= endYear; y++) {
-    const isFirstYear = y === startYear;
-    const isLastYear = y === endYear;
-    const start = isFirstYear ? exactStart : `${y}-01-01`;
-    const end = isLastYear ? exactEnd : `${y}-12-31`;
-    intervals.push({ start, end });
-  }
-
+  
   const allDownloads: DownloadStat[] = [];
   let fetchError: string | undefined = undefined;
+  
+  const url = `https://npm-stat.com/api/download-counts?package=${encodedPackageName}&from=${exactStart}&until=${exactEnd}`;
 
-  for (const interval of intervals) {
-    const url = `${baseUrl}/downloads/range/${interval.start}:${interval.end}/${encodedPackageName}`;
-    const isImmutable = interval.end < todayStr;
+  const todayStr = new Date().toISOString().split('T')[0];
+  const isImmutable = exactEnd < todayStr;
 
-    try {
-      const data = await fetchWithCache(url, isImmutable);
-      if (data && data.downloads) {
-        allDownloads.push(...data.downloads);
+  try {
+    const data = await fetchWithCache(url, isImmutable);
+    if (data && data[packageName]) {
+      const dates = Object.keys(data[packageName]).sort();
+      for (const date of dates) {
+        allDownloads.push({
+          day: date,
+          downloads: data[packageName][date]
+        });
       }
-    } catch (err) {
-      fetchError = `Failed to fetch interval ${interval.start} to ${interval.end}: ${(err as Error).message || String(err)}`;
+    } else if (Object.keys(data).length === 0) {
+      // Package not found or no data
+    } else {
+      fetchError = "Unexpected data format from API";
     }
+  } catch (err) {
+    fetchError = `Failed to fetch data: ${(err as Error).message || String(err)}`;
   }
 
   return {
