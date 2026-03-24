@@ -6,8 +6,6 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { PackageConfig } from './types';
-
 export const defaultPackage = 'react';
 export const minDate = '2010-01-12';
 
@@ -32,4 +30,3 @@ export const daysOfWeek = [
     { label: 'Sat', value: 6 },
 ];
 
-export type { PackageConfig };

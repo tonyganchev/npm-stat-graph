@@ -11,14 +11,13 @@ import { DateRangeType } from './api/npmApi';
 export type { DateRangeType };
 
 export interface PackageConfig {
-    id: string;
     name: string;
     visible: boolean;
 }
 
 export interface CombinedData {
     day: string;
-    packages: { [pkgId: string]: number };
+    packages: { [pkgName: string]: number };
 }
 
 export interface ChartDataPoint {
@@ -29,7 +28,6 @@ export interface ChartDataPoint {
     absMax: number;
     displayMax: number;
     displayMin: number;
-    metrics: Record<string, number>;
 }
 
 export type GroupBy = "day" | "week" | "month" | "year";

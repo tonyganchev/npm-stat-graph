@@ -43,16 +43,16 @@ function App() {
             const statsPromises = activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
             const results = await Promise.all(statsPromises);
 
-            const dayMap = new Map<string, { [pkgId: string]: number }>();
+            const dayMap = new Map<string, { [pkgName: string]: number }>();
             const extractedErrors: string[] = [];
 
             results.forEach((res, index) => {
-                const pkgId = activePkgs[index].id;
+                const pkgName = activePkgs[index].name.trim();
                 if (res.error) extractedErrors.push(`[${res.package}] ${res.error}`);
 
                 res.downloads.forEach(d => {
                     if (!dayMap.has(d.day)) dayMap.set(d.day, {});
-                    dayMap.get(d.day)![pkgId] = d.downloads;
+                    dayMap.get(d.day)![pkgName] = d.downloads;
                 });
             });
 

@@ -26,7 +26,7 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
     const [hoveredSwapIndex, setHoveredSwapIndex] = useState<number | null>(null);
 
     const addPackage = () => {
-        setPackages([...packages, { id: Math.random().toString(), name: '', visible: true }]);
+        setPackages([...packages, { name: '', visible: true }]);
     };
 
     const removePackage = (index: number) => {
@@ -61,7 +61,7 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
     return (
         <div className="package-list">
             {packages.map((pkg, i) => (
-                <div key={pkg.id} className="package-input-row">
+                <div key={i} className="package-input-row">
                     {i < packages.length - 1 && (
                         <div className={`swap-hint ${hoveredSwapIndex === i ? 'visible' : ''}`} />
                     )}

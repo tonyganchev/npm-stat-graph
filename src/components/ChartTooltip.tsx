@@ -39,14 +39,14 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
         let displayItems: TooltipPayloadItem[] = [];
         if (isBarChart && dataPoint.pkgStats) {
             displayItems = visiblePackages.map(pkg => {
-                const stats = dataPoint.pkgStats[pkg.id] || { downloads: 0, rateChangePercent: 0 };
+                const stats = dataPoint.pkgStats[pkg.name] || { downloads: 0, rateChangePercent: 0 };
                 const value = viewMode === 'percent' ? stats.rateChangePercent : stats.downloads;
                 return {
-                    dataKey: pkg.id,
+                    dataKey: pkg.name,
                     name: pkg.name,
                     value,
                     payload: dataPoint,
-                    color: packageColors[packages.findIndex(p => p.id === pkg.id) % packageColors.length]
+                    color: packageColors[packages.findIndex(p => p.name === pkg.name) % packageColors.length]
                 };
             });
         } else {
@@ -54,7 +54,7 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                 const matchedPkg = packages.find(pkg => pkg.name === p.name);
                 return {
                     ...p,
-                    dataKey: matchedPkg ? matchedPkg.id : p.dataKey,
+                    dataKey: matchedPkg ? matchedPkg.name : p.dataKey,
                     color: p.stroke || p.color || p.fill
                 };
             });

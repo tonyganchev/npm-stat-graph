@@ -49,9 +49,10 @@ export const LineChartView: FC<LineChartViewProps> = ({
         >
             <CartesianGrid strokeDasharray="1 2" stroke="var(--text-secondary)" vertical={false} />
             <XAxis
-                dataKey="shortDate"
+                dataKey="day"
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
+                tickFormatter={(_, index) => chartData[index]?.shortDate}
                 tickMargin={10}
                 minTickGap={30}
             />
@@ -84,13 +85,17 @@ export const LineChartView: FC<LineChartViewProps> = ({
             )}
 
             {visiblePackages.map((pkg) => {
-                const originalIndex = packages.findIndex(p => p.id === pkg.id);
+                const originalIndex = packages.findIndex(p => p.name === pkg.name);
                 const color = packageColors[originalIndex % packageColors.length];
                 return (
                     <Line
-                        key={pkg.id}
+                        key={pkg.name}
                         type="monotone"
-                        dataKey={(data: ChartDataPoint) => data.metrics?.[pkg.id]}
+                        dataKey={(data: ChartDataPoint) => 
+                            viewMode === 'percent' 
+                                ? data.pkgStats[pkg.name]?.rateChangePercent 
+                                : data.pkgStats[pkg.name]?.downloads
+                        }
                         name={pkg.name}
                         stroke={color}
                         strokeWidth={1.5}

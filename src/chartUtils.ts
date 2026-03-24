@@ -22,13 +22,12 @@ export function groupChartData(
                 formattedDate: format(dateObj, 'MMM d, yyyy'),
                 shortDate: format(dateObj, 'MMM d'),
                 pkgStats: {},
-                metrics: {},
                 absMax: 0,
                 displayMax: 0,
                 displayMin: 0
             };
             packages.forEach(p => {
-                dayItem.metrics[p.id] = item.packages[p.id] || 0;
+                dayItem.pkgStats[p.name] = { downloads: item.packages[p.name] || 0, rateChangePercent: 0 };
             });
             return dayItem;
         });
@@ -63,18 +62,17 @@ export function groupChartData(
                 formattedDate: format(groupStart, fmt),
                 shortDate: format(groupStart, shortFmt),
                 pkgStats: {},
-                metrics: {},
                 absMax: 0,
                 displayMax: 0,
                 displayMin: 0
             });
-            packages.forEach(p => groupedMap.get(key)!.metrics[p.id] = 0);
+            packages.forEach(p => groupedMap.get(key)!.pkgStats[p.name] = { downloads: 0, rateChangePercent: 0 });
         }
 
         const current = groupedMap.get(key)!;
         packages.forEach(p => {
-            if (item.packages[p.id]) {
-                current.metrics[p.id] += item.packages[p.id];
+            if (item.packages[p.name]) {
+                current.pkgStats[p.name].downloads += item.packages[p.name];
             }
         });
     });

@@ -25,7 +25,7 @@ interface StatChartProps {
     chartType: ChartType;
 }
 
-export const StatChart = memo(({ 
+const statChart = memo(({ 
     data, 
     packages, 
     visiblePackages, 
@@ -42,18 +42,14 @@ export const StatChart = memo(({
         const grouped = groupChartData(filteredData, groupBy, packages);
 
         return grouped.map((item: ChartDataPoint, index: number, self: ChartDataPoint[]) => {
-            const newItem = {
-                ...item,
-                pkgStats: {} as Record<string, { downloads: number, rateChangePercent: number }>,
-                metrics: { ...item.metrics } 
-            } as ChartDataPoint;
+            const newItem = { ...item, pkgStats: { ...item.pkgStats } };
             const prev = index > 0 ? self[index - 1] : null;
 
             packages.forEach(p => {
-                const abs = item.metrics[p.id] || 0;
+                const abs = item.pkgStats[p.name]?.downloads || 0;
                 let pct = 0;
                 if (prev) {
-                    const prevAbs = prev.metrics[p.id] || 0;
+                    const prevAbs = prev.pkgStats[p.name]?.downloads || 0;
                     if (prevAbs === 0) {
                         pct = abs > 0 ? 100 : 0;
                     } else {
@@ -61,12 +57,11 @@ export const StatChart = memo(({
                     }
                 }
 
-                newItem.pkgStats[p.id] = { downloads: abs, rateChangePercent: pct };
-                newItem.metrics[p.id] = viewMode === 'percent' ? pct : abs;
+                newItem.pkgStats[p.name] = { downloads: abs, rateChangePercent: pct };
             });
 
             // Add max value for domain calculation
-            const relevantStats = visiblePackages.map(p => newItem.pkgStats[p.id]);
+            const relevantStats = visiblePackages.map(p => newItem.pkgStats[p.name]);
             const vals = viewMode === 'percent' 
                 ? relevantStats.map(s => s?.rateChangePercent || 0) 
                 : relevantStats.map(s => s?.downloads || 0);
@@ -80,24 +75,24 @@ export const StatChart = memo(({
     }, [data, groupBy, packages, visiblePackages, enabledDays, viewMode]);
 
     const packageSortValues = useMemo(() => {
-        const values: { [id: string]: number } = {};
-        packages.forEach(p => values[p.id] = 0);
+        const values: { [name: string]: number } = {};
+        packages.forEach(p => values[p.name] = 0);
 
         const count = chartData.length || 1;
         chartData.forEach(item => {
             packages.forEach(p => {
-                const stats = item.pkgStats?.[p.id];
+                const stats = item.pkgStats?.[p.name];
                 if (viewMode === 'percent') {
-                    values[p.id] += stats?.rateChangePercent || 0;
+                    values[p.name] += stats?.rateChangePercent || 0;
                 } else {
-                    values[p.id] += stats?.downloads || 0;
+                    values[p.name] += stats?.downloads || 0;
                 }
             });
         });
 
         if (viewMode === 'percent') {
             packages.forEach(p => {
-                values[p.id] = values[p.id] / count;
+                values[p.name] = values[p.name] / count;
             });
         }
         return values;
@@ -152,16 +147,16 @@ export const StatChart = memo(({
                     </span>
                 </div>
                 <div className="chart-summary-group">
-                    {[...visiblePackages].sort((a, b) => (packageSortValues[b.id] || 0) - (packageSortValues[a.id] || 0)).map((pkg) => {
-                        const originalIndex = packages.findIndex(p => p.id === pkg.id);
+                    {[...visiblePackages].sort((a, b) => (packageSortValues[b.name] || 0) - (packageSortValues[a.name] || 0)).map((pkg, i) => {
+                        const originalIndex = packages.findIndex(p => p.name === pkg.name);
                         const color = packageColors[originalIndex % packageColors.length];
-                        const val = packageSortValues[pkg.id] || 0;
+                        const val = packageSortValues[pkg.name] || 0;
                         const summaryColor = viewMode === 'percent'
                             ? (val > 0 ? '#10b981' : val < 0 ? '#ef4444' : 'var(--text-secondary)')
                             : 'inherit';
 
                         return (
-                            <div className="stat-summary" key={pkg.id}>
+                            <div className="stat-summary" key={i}>
                                 <span className="stat-label" style={{ color }}>{pkg.name}</span>
                                 <span className="stat-value" style={{ color: summaryColor }}>
                                     {viewMode === 'percent'
@@ -203,5 +198,5 @@ export const StatChart = memo(({
         </div>
     );
 });
- 
-export default StatChart;
+
+export default statChart;

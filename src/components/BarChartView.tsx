@@ -55,12 +55,12 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 vertical={false}
             />
             <XAxis
-                dataKey="shortDate"
+                dataKey="day"
                 stroke="var(--text-secondary)"
                 interval={0} // Process every tick to calculate boundaries accurately
                 tickLine={false}
                 tick={(props: { x?: string | number, y?: string | number, payload?: { value?: string | number }, index?: number, width?: string | number }) => {
-                    const { x: propX = 0, y: propY = 0, payload, index = 0, width: propWidth = 0 } = props;
+                    const { x: propX = 0, y: propY = 0, index = 0, width: propWidth = 0 } = props;
                     const x = Number(propX);
                     const y = Number(propY);
                     const axisWidth = Number(propWidth) || chartWidth || 0;
@@ -89,7 +89,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
                             
                             {showLabel && (
                                 <text dy={20} textAnchor="middle" fill="var(--text-secondary)" fontSize={11}>
-                                    {payload?.value}
+                                    {chartData[index]?.shortDate}
                                 </text>
                             )}
                             
@@ -138,7 +138,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
             )}
 
             <Bar
-                key={`bar-series-${visiblePackages.map(p => p.id).join(',')}-${viewMode}`}
+                key={`bar-series-${visiblePackages.map(p => p.name).join(',')}-${viewMode}`}
                 dataKey="absMax"
                 fill="none"
                 isAnimationActive={true}
@@ -157,18 +157,18 @@ export const BarChartView: FC<BarChartViewProps> = ({
                         <g>
                             {visiblePackages.map((pkg) => {
                                 const val = viewMode === 'percent'
-                                    ? pkgStats[pkg.id]?.rateChangePercent || 0
-                                    : pkgStats[pkg.id]?.downloads || 0;
+                                    ? pkgStats[pkg.name]?.rateChangePercent || 0
+                                    : pkgStats[pkg.name]?.downloads || 0;
 
                                 const h = !absMax ? 0 : (Math.abs(val) / absMax) * maxHeight;
                                 const y = val >= 0 ? y0 - h : y0;
 
-                                const originalIndex = packages.findIndex(p => p.id === pkg.id);
+                                const originalIndex = packages.findIndex(p => p.name === pkg.name);
                                 const color = packageColors[originalIndex % packageColors.length];
 
                                 return (
                                     <rect
-                                        key={pkg.id}
+                                        key={pkg.name}
                                         x={x}
                                         y={y}
                                         width={width}
