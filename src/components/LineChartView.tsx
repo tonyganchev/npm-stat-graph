@@ -52,7 +52,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
                 dataKey="day"
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                tickFormatter={(_, index) => chartData[index]?.shortDate}
+                tickFormatter={(value) => chartData.find(d => d.day === value)?.shortDate || value}
                 tickMargin={10}
                 minTickGap={30}
             />

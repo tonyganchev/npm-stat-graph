@@ -17,19 +17,20 @@ export function groupChartData(
     if (groupBy === 'day') {
         return data.map(item => {
             const dateObj = parseISO(item.day);
-            const dayItem: ChartDataPoint = {
+            return {
                 day: item.day,
                 formattedDate: format(dateObj, 'MMM d, yyyy'),
                 shortDate: format(dateObj, 'MMM d'),
-                pkgStats: {},
+                pkgStats: Object.fromEntries(
+                    packages.map(p => [
+                        p.name, 
+                        { downloads: item.packages[p.name] || 0, rateChangePercent: 0 }
+                    ])
+                ),
                 absMax: 0,
                 displayMax: 0,
                 displayMin: 0
             };
-            packages.forEach(p => {
-                dayItem.pkgStats[p.name] = { downloads: item.packages[p.name] || 0, rateChangePercent: 0 };
-            });
-            return dayItem;
         });
     }
 
@@ -61,12 +62,13 @@ export function groupChartData(
                 day: key,
                 formattedDate: format(groupStart, fmt),
                 shortDate: format(groupStart, shortFmt),
-                pkgStats: {},
+                pkgStats: Object.fromEntries(
+                    packages.map(p => [p.name, { downloads: 0, rateChangePercent: 0 }])
+                ),
                 absMax: 0,
                 displayMax: 0,
                 displayMin: 0
             });
-            packages.forEach(p => groupedMap.get(key)!.pkgStats[p.name] = { downloads: 0, rateChangePercent: 0 });
         }
 
         const current = groupedMap.get(key)!;
