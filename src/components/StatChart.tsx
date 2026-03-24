@@ -116,11 +116,11 @@ const statChart = memo(({
 
     const showDots = useMemo(() => {
         if (!chartWidth || chartData.length <= 1) {
-            return true;
+            return false;
         }
         const plotWidth = chartWidth - 80;
         const distance = plotWidth / chartData.length;
-        return distance >= 8;
+        return distance >= 4 || chartData.length < 200;
     }, [chartWidth, chartData.length]);
 
     const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num);

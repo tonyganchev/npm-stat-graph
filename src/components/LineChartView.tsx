@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { FC } from 'react';
+import { FC, useMemo } from 'react';
 import {
     LineChart,
     Line,
@@ -40,9 +40,23 @@ export const LineChartView: FC<LineChartViewProps> = ({
     chartWidth,
     height
 }) => {
+    const enrichedData = useMemo(() => {
+        return chartData.map(d => {
+            const newObj: Record<string, unknown> = { ...d };
+            visiblePackages.forEach(pkg => {
+                const safeName = pkg.name.replace(/[^a-zA-Z0-9-]/g, '_');
+                newObj[`val_${safeName}`] = viewMode === 'percent' 
+                    ? d.pkgStats[pkg.name]?.rateChangePercent 
+                    : d.pkgStats[pkg.name]?.downloads;
+            });
+            return newObj;
+        });
+    }, [chartData, visiblePackages, viewMode]);
+
     return (
         <LineChart
-            data={chartData}
+            key={`${viewMode}-${chartData.length}`}
+            data={enrichedData}
             width={chartWidth}
             height={height}
             margin={{ top: 10, right: 10, left: 10, bottom: 50 }}
@@ -91,11 +105,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
                     <Line
                         key={pkg.name}
                         type="monotone"
-                        dataKey={(data: ChartDataPoint) => 
-                            viewMode === 'percent' 
-                                ? data.pkgStats[pkg.name]?.rateChangePercent 
-                                : data.pkgStats[pkg.name]?.downloads
-                        }
+                        dataKey={`val_${pkg.name.replace(/[^a-zA-Z0-9-]/g, '_')}`}
                         name={pkg.name}
                         stroke={color}
                         strokeWidth={1.5}

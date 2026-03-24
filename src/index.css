@@ -729,3 +729,13 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   color: var(--text-primary);
   opacity: 1;
 }
+
+/* Delay line dots so they don't appear before the line sweep finishes */
+.recharts-line-dot {
+  animation: dotFadeIn 0.3s ease-in 1.4s both;
+}
+
+@keyframes dotFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

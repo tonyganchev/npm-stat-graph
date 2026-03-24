@@ -40,7 +40,8 @@ function App() {
             const searchStart = customStart;
             const searchEnd = customEnd;
 
-            const statsPromises = activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
+            const statsPromises =
+                activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
             const results = await Promise.all(statsPromises);
 
             const dayMap = new Map<string, { [pkgName: string]: number }>();
@@ -51,7 +52,9 @@ function App() {
                 if (res.error) extractedErrors.push(`[${res.package}] ${res.error}`);
 
                 res.downloads.forEach(d => {
-                    if (!dayMap.has(d.day)) dayMap.set(d.day, {});
+                    if (!dayMap.has(d.day)) {
+                        dayMap.set(d.day, {});
+                    }
                     dayMap.get(d.day)![pkgName] = d.downloads;
                 });
             });
@@ -83,7 +86,7 @@ function App() {
 
 
     // Filter out visible packages for charting
-    const visiblePackages = useMemo(() => 
+    const visiblePackages = useMemo(() =>
         packages.filter(p => p.visible && p.name.trim() !== ''),
         [packages]
     );
@@ -96,7 +99,13 @@ function App() {
         <div className="app-container">
             <header>
                 <h1>
-                    <img src={`${import.meta.env.BASE_URL}favicon.svg`} className="header-icon" alt="Logo" width={40} height={40} />
+                    <img
+                        src={`${import.meta.env.BASE_URL}favicon.svg`}
+                        className="header-icon"
+                        alt="Logo"
+                        width={40}
+                        height={40}
+                    />
                     npm-stat-graph
                 </h1>
             </header>
@@ -115,7 +124,7 @@ function App() {
                     isLoading={isLoading}
                 />
 
-                <DayFilter 
+                <DayFilter
                     enabledDays={enabledDays}
                     setEnabledDays={(days) => updateSync({ enabledDays: days })}
                     viewMode={viewMode}

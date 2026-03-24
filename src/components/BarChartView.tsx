@@ -43,6 +43,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
 
     return (
         <BarChart
+            key={`${viewMode}-${chartData.length}`}
             data={chartData}
             width={chartWidth}
             height={height}

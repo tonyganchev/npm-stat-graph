@@ -16,10 +16,8 @@ const storageKey = 'npm-stat-graph-state';
 export function usePersistence() {
     const loadInitialState = (): AppState => {
         const params = new URLSearchParams(window.location.search);
-        
-        const getParam = (key: string) => params.get(key);
  
-        const urlPkgsRaw = getParam('packages');
+        const urlPkgsRaw = params.get('packages');
         let urlPkgs: PackageConfig[] | null = null;
         if (urlPkgsRaw) {
             urlPkgs = urlPkgsRaw.split(',').map(p => {
@@ -30,8 +28,8 @@ export function usePersistence() {
             });
         }
 
-        const urlRange = getParam('range') as DateRangeType;
-        const urlDaysRaw = getParam('days');
+        const urlRange = params.get('range') as DateRangeType;
+        const urlDaysRaw = params.get('days');
         const urlDays = urlDaysRaw ? urlDaysRaw.split(',').map(Number) : null;
 
         let state: Partial<AppState> | null = null;
@@ -40,11 +38,11 @@ export function usePersistence() {
             state = {
                 packages: urlPkgs,
                 range: urlRange || 'last-30-days',
-                customStart: getParam('customStart') || '',
-                customEnd: getParam('customEnd') || '',
+                customStart: params.get('customStart') || '',
+                customEnd: params.get('customEnd') || '',
                 enabledDays: urlDays || [0, 1, 2, 3, 4, 5, 6],
-                viewMode: ['absolute', 'percent'].includes(getParam('viewMode') as string) ? getParam('viewMode') as ViewMode : 'absolute',
-                chartType: ['line', 'bar'].includes(getParam('chartType') as string) ? getParam('chartType') as ChartType : 'line'
+                viewMode: ['absolute', 'percent'].includes(params.get('viewMode') as string) ? params.get('viewMode') as ViewMode : 'absolute',
+                chartType: ['line', 'bar'].includes(params.get('chartType') as string) ? params.get('chartType') as ChartType : 'line'
             };
         } else {
             const saved = localStorage.getItem(storageKey);
