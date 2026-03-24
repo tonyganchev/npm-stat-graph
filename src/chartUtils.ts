@@ -14,70 +14,43 @@ export function groupChartData(
     groupBy: GroupBy, 
     packages: PackageConfig[]
 ) {
-    if (groupBy === 'day') {
-        return data.map(item => {
-            const dateObj = parseISO(item.day);
+    const config = {
+        day: { start: (d: Date) => d, fmt: 'MMM d, yyyy', shortFmt: 'MMM d' },
+        week: { start: startOfWeek, fmt: "'Week of' MMM d, yyyy", shortFmt: 'MMM d' },
+        month: { start: startOfMonth, fmt: 'MMMM yyyy', shortFmt: 'MMM yyyy' },
+        year: { start: startOfYear, fmt: 'yyyy', shortFmt: 'yyyy' },
+    };
+
+    const { start: getStart, fmt, shortFmt } = config[groupBy];
+
+    // 1. Group items into buckets elegantly using Map.groupBy (ES2024)
+    const bucketsMap = Map.groupBy(data, item => {
+        const groupStart = getStart(parseISO(item.day));
+        return format(groupStart, 'yyyy-MM-dd');
+    });
+
+    // 2. Map buckets elegantly directly from the iterator (using modern Iterator helpers)
+    return bucketsMap.entries()
+        .map(([key, items]): ChartDataPoint => {
+            const firstDate = parseISO(items[0].day);
+            const groupStart = getStart(firstDate);
+            
             return {
-                day: item.day,
-                formattedDate: format(dateObj, 'MMM d, yyyy'),
-                shortDate: format(dateObj, 'MMM d'),
-                pkgStats: Object.fromEntries(
-                    packages.map(p => [
-                        p.name, 
-                        { downloads: item.packages[p.name] || 0, rateChangePercent: 0 }
-                    ])
-                ),
+                day: key,
+                formattedDate: format(groupStart, fmt),
+                shortDate: format(groupStart, shortFmt),
+                pkgStats: Object.fromEntries(packages.map(p => [
+                    p.name, 
+                    {
+                        downloads: items.reduce((sum, item) => sum + (item.packages[p.name] || 0), 0),
+                        rateChangePercent: 0
+                    }
+                ])),
                 absMax: 0,
                 displayMax: 0,
                 displayMin: 0
             };
-        });
-    }
-
-    const groupedMap = new Map<string, ChartDataPoint>();
-
-    data.forEach(item => {
-        const dateObj = parseISO(item.day);
-        let groupStart = dateObj;
-        let fmt = 'MMM d, yyyy';
-        let shortFmt = 'MMM d';
-
-        if (groupBy === 'week') {
-            groupStart = startOfWeek(dateObj);
-            fmt = "'Week of' MMM d, yyyy";
-        } else if (groupBy === 'month') {
-            groupStart = startOfMonth(dateObj);
-            fmt = "MMMM yyyy";
-            shortFmt = "MMM yyyy";
-        } else if (groupBy === 'year') {
-            groupStart = startOfYear(dateObj);
-            fmt = "yyyy";
-            shortFmt = "yyyy";
-        }
-
-        const key = groupStart.toISOString();
-
-        if (!groupedMap.has(key)) {
-            groupedMap.set(key, {
-                day: key,
-                formattedDate: format(groupStart, fmt),
-                shortDate: format(groupStart, shortFmt),
-                pkgStats: Object.fromEntries(
-                    packages.map(p => [p.name, { downloads: 0, rateChangePercent: 0 }])
-                ),
-                absMax: 0,
-                displayMax: 0,
-                displayMin: 0
-            });
-        }
-
-        const current = groupedMap.get(key)!;
-        packages.forEach(p => {
-            if (item.packages[p.name]) {
-                current.pkgStats[p.name].downloads += item.packages[p.name];
-            }
-        });
-    });
-
-    return Array.from(groupedMap.values()).sort((a, b) => a.day.localeCompare(b.day));
+        })
+        .toArray()
+        .sort((a, b) => a.day.localeCompare(b.day));
 }
