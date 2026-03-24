@@ -6,12 +6,13 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
+import { Loader2,Search } from 'lucide-react';
 import { FC, FormEvent } from 'react';
-import { Search, Loader2 } from 'lucide-react';
-import { PackageConfig, DateRangeType } from '../types';
+
 import { calculateDateRange } from '../api/npmApi';
-import { PackageSelector } from './PackageSelector';
+import { DateRangeType,PackageConfig } from '../types';
 import { DateRangeSelector } from './DateRangeSelector';
+import { PackageSelector } from './PackageSelector';
 
 interface SearchControlsProps {
     packages: PackageConfig[];

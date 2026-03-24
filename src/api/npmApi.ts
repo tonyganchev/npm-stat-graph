@@ -6,8 +6,9 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-/// <reference types="vite/client" />
-import { format, subMonths, startOfDay, addDays, startOfYear, startOfMonth, startOfWeek } from 'date-fns';
+import { addDays, format, startOfDay, startOfMonth, startOfWeek,startOfYear, subMonths } from 'date-fns';
+
+import { minDate } from '../utils';
 
 export interface DownloadStat {
   downloads: number;
@@ -23,8 +24,6 @@ export interface NpmStatsResponse {
 }
 
 export type DateRangeType = "last-7-days" | "last-30-days" | "last-quarter" | "last-6-months" | "last-year" | "last-2-years" | "last-5-years" | "last-10-years" | "ytd" | "mtd" | "wtd" | "custom";
-
-import { minDate } from '../utils';
 
 export function calculateDateRange(rangeType: DateRangeType): { start: string, end: string } {
   const today = startOfDay(new Date());

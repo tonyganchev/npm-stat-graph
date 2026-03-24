@@ -6,8 +6,9 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { Fragment, FC } from 'react';
-import { PackageConfig, ViewMode, ChartDataPoint } from '../types';
+import { FC,Fragment } from 'react';
+
+import { ChartDataPoint,PackageConfig, ViewMode } from '../types';
 import { packageColors } from '../utils';
 
 interface TooltipPayloadItem {

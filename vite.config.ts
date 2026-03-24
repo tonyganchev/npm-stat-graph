@@ -6,9 +6,9 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { visualizer } from 'rollup-plugin-visualizer'
+import { defineConfig } from 'vite'
 
 export default defineConfig({
     base: '/npm-stat-graph/',

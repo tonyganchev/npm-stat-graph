@@ -7,6 +7,7 @@
  */
 
 import { FC } from 'react';
+
 import { DateRangeType } from '../types';
 import { minDate } from '../utils';
 

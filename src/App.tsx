@@ -6,14 +6,16 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { useState, useEffect, useCallback, useMemo, useDeferredValue, lazy, Suspense } from 'react';
-import { AlertCircle, Github, Activity } from 'lucide-react';
-import { SearchControls } from './components/SearchControls';
-const StatChart = lazy(() => import('./components/StatChart'));
-import { DayFilter } from './components/DayFilter';
+import { Activity,AlertCircle, Github } from 'lucide-react';
+import { lazy, Suspense,useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+
 import { fetchPackageStats } from './api/npmApi';
-import { CombinedData } from './types';
+import { DayFilter } from './components/DayFilter';
+import { SearchControls } from './components/SearchControls';
 import { usePersistence } from './hooks/usePersistence';
+import { CombinedData } from './types';
+
+const StatChart = lazy(() => import('./components/StatChart'));
 
 function App() {
     const { state, updateSync } = usePersistence();

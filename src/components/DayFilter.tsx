@@ -6,10 +6,10 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
+import { BarChart2,BarChart3, LineChart as LineChartIcon, Percent } from 'lucide-react';
 import { FC } from 'react';
 
-import { ViewMode, ChartType } from '../types';
-import { BarChart3, Percent, LineChart as LineChartIcon, BarChart2 } from 'lucide-react';
+import { ChartType,ViewMode } from '../types';
 import { daysOfWeek } from '../utils';
 
 interface DayFilterProps {

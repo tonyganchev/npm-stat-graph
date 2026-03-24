@@ -8,16 +8,16 @@
 
 import { FC } from 'react';
 import {
-    BarChart,
     Bar,
-    XAxis,
-    YAxis,
+    BarChart,
     CartesianGrid,
-    Tooltip,
     ReferenceArea,
-    ReferenceLine
-} from 'recharts';
-import { PackageConfig, ViewMode, ChartDataPoint } from '../types';
+    ReferenceLine,
+    Tooltip,
+    XAxis,
+    YAxis} from 'recharts';
+
+import { ChartDataPoint,PackageConfig, ViewMode } from '../types';
 import { packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 

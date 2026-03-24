@@ -6,9 +6,10 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { useState, useCallback } from 'react';
-import { AppState, ChartType, ViewMode, PackageConfig } from '../types';
-import { DateRangeType, calculateDateRange } from '../api/npmApi';
+import { useCallback,useState } from 'react';
+
+import { calculateDateRange,DateRangeType } from '../api/npmApi';
+import { AppState, ChartType, PackageConfig,ViewMode } from '../types';
 import { defaultPackage } from '../utils';
 
 const storageKey = 'npm-stat-graph-state';
@@ -23,7 +24,6 @@ export function usePersistence() {
             urlPkgs = urlPkgsRaw.split(',').map(p => {
                 const visible = !p.startsWith('!');
                 const name = visible ? p : p.substring(1);
-                // Ensure we decode the package name to avoid double encoding if it was already encoded in the URL
                 return { name: decodeURIComponent(name), visible };
             });
         }

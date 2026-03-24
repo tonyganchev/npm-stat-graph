@@ -6,14 +6,15 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { useMemo, useState, useRef, useEffect, memo } from 'react';
-import { parseISO, getDay } from 'date-fns';
-import { CombinedData, GroupBy, PackageConfig, ViewMode, ChartType, ChartDataPoint } from '../types';
+import { getDay,parseISO } from 'date-fns';
 import { Activity } from 'lucide-react';
-import { packageColors } from '../utils';
+import { memo,useEffect, useMemo, useRef, useState } from 'react';
+
 import { groupChartData } from '../chartUtils';
-import { LineChartView } from './LineChartView';
+import { ChartDataPoint,ChartType, CombinedData, GroupBy, PackageConfig, ViewMode } from '../types';
+import { packageColors } from '../utils';
 import { BarChartView } from './BarChartView';
+import { LineChartView } from './LineChartView';
 
 interface StatChartProps {
     data: CombinedData[];

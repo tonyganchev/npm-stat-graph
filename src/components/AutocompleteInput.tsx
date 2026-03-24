@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { useState, useEffect, useRef, CSSProperties } from 'react';
+import { CSSProperties,useEffect, useRef, useState } from 'react';
 
 interface AutocompleteInputProps {
     value: string;

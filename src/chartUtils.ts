@@ -6,7 +6,8 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { format, parseISO, startOfWeek, startOfMonth, startOfYear } from 'date-fns';
+import { format, parseISO, startOfMonth, startOfWeek, startOfYear } from 'date-fns';
+
 import { ChartDataPoint, CombinedData, GroupBy, PackageConfig } from './types';
 
 export function groupChartData(

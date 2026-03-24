@@ -6,10 +6,12 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
+import './index.css'
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+
 import App from './App.tsx'
-import './index.css'
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>

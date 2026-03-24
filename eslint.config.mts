@@ -10,9 +10,11 @@ import headerPlugin, { HeaderOptions, HeaderRuleConfig } from '@tony.ganchev/esl
 import tsPlugin from '@typescript-eslint/eslint-plugin';
 import tsParser from '@typescript-eslint/parser';
 import { ESLint } from 'eslint';
+import { defineConfig } from 'eslint/config';
+import importPlugin from 'eslint-plugin-import';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import { defineConfig } from 'eslint/config';
+import importSortPlugin from 'eslint-plugin-simple-import-sort';
 import globals from 'globals';
 
 export default defineConfig([
@@ -33,8 +35,10 @@ export default defineConfig([
     plugins: {
       '@tony.ganchev/header': headerPlugin,
       '@typescript-eslint': tsPlugin as unknown as ESLint.Plugin,
+      'import': importPlugin,
       'react-hooks': reactHooks as unknown as ESLint.Plugin,
       'react-refresh': reactRefresh,
+      'simple-import-sort': importSortPlugin
     },
     rules: {
       ...tsPlugin.configs.recommended.rules,
@@ -66,6 +70,11 @@ export default defineConfig([
           },
         } as HeaderOptions,
       ] as HeaderRuleConfig,
+      'simple-import-sort/imports': 'error',
+      'simple-import-sort/exports': 'error',
+      'import/first': 'error',
+      'import/newline-after-import': 'error',
+      'import/no-duplicates': 'error'
     },
   },
 ]);

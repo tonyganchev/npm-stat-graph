@@ -6,8 +6,9 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
+import { ArrowUpDown,Eye, EyeOff, Plus, X } from 'lucide-react';
 import { CSSProperties, FC, useState } from 'react';
-import { Plus, Eye, EyeOff, X, ArrowUpDown } from 'lucide-react';
+
 import { PackageConfig } from '../types';
 import { packageColors } from '../utils';
 import { AutocompleteInput } from './AutocompleteInput';
