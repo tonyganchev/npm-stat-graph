@@ -15,9 +15,9 @@ import {
     ReferenceLine,
     Tooltip,
     XAxis,
-    YAxis} from 'recharts';
+    YAxis } from 'recharts';
 
-import { ChartDataPoint,PackageConfig, ViewMode } from '../types';
+import { ChartDataPoint, PackageConfig, ViewMode } from '../types';
 import { packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 
@@ -38,15 +38,15 @@ export const LineChartView: FC<LineChartViewProps> = ({
     viewMode,
     showDots,
     chartWidth,
-    height
+    height,
 }) => {
     const enrichedData = useMemo(() => {
-        return chartData.map(d => {
+        return chartData.map((d) => {
             const newObj: Record<string, unknown> = { ...d };
-            visiblePackages.forEach(pkg => {
+            visiblePackages.forEach((pkg) => {
                 const safeName = pkg.name.replace(/[^a-zA-Z0-9-]/g, '_');
-                newObj[`val_${safeName}`] = viewMode === 'percent' 
-                    ? d.pkgStats[pkg.name]?.rateChangePercent 
+                newObj[`val_${safeName}`] = viewMode === ViewMode.percent
+                    ? d.pkgStats[pkg.name]?.rateChangePercent
                     : d.pkgStats[pkg.name]?.downloads;
             });
             return newObj;
@@ -66,7 +66,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
                 dataKey="day"
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                tickFormatter={(value) => chartData.find(d => d.day === value)?.shortDate || value}
+                tickFormatter={(value) => chartData.find((d) => d.day === value)?.shortDate || value}
                 tickMargin={10}
                 minTickGap={30}
             />
@@ -74,24 +74,24 @@ export const LineChartView: FC<LineChartViewProps> = ({
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
                 tickFormatter={(value) => {
-                    if (viewMode === 'percent') return `${value.toFixed(0)}%`;
+                    if (viewMode === ViewMode.percent) return `${value.toFixed(0)}%`;
                     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
                     if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
                     return value;
                 }}
                 width={60}
             />
-            <Tooltip 
-                content={
-                    <ChartTooltip 
-                        visiblePackages={visiblePackages} 
-                        packages={packages} 
-                        viewMode={viewMode} 
+            <Tooltip
+                content={(
+                    <ChartTooltip
+                        visiblePackages={visiblePackages}
+                        packages={packages}
+                        viewMode={viewMode}
                     />
-                } 
+                )}
             />
 
-            {viewMode === 'percent' && (
+            {viewMode === ViewMode.percent && (
                 <>
                     <ReferenceArea y1={0} fill="rgba(239, 68, 68, 0.25)" />
                     <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
@@ -99,7 +99,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
             )}
 
             {visiblePackages.map((pkg) => {
-                const originalIndex = packages.findIndex(p => p.name === pkg.name);
+                const originalIndex = packages.findIndex((p) => p.name === pkg.name);
                 const color = packageColors[originalIndex % packageColors.length];
                 return (
                     <Line
@@ -111,10 +111,10 @@ export const LineChartView: FC<LineChartViewProps> = ({
                         strokeWidth={1.5}
                         animationDuration={1500}
                         animationEasing="ease-in-out"
-                        dot={showDots ? { r: 3, fill: "var(--card-bg)", stroke: color, strokeWidth: 1.5 } : false}
-                        activeDot={{ r: 4, fill: color, stroke: "var(--text-primary)", strokeWidth: 1.5 }}
+                        dot={showDots ? { r: 3, fill: 'var(--card-bg)', stroke: color, strokeWidth: 1.5 } : false}
+                        activeDot={{ r: 4, fill: color, stroke: 'var(--text-primary)', strokeWidth: 1.5 }}
                     />
-                )
+                );
             })}
         </LineChart>
     );

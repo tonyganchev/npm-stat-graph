@@ -6,9 +6,9 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { FC,Fragment } from 'react';
+import { FC, Fragment } from 'react';
 
-import { ChartDataPoint,PackageConfig, ViewMode } from '../types';
+import { ChartDataPoint, PackageConfig, ViewMode } from '../types';
 import { packageColors } from '../utils';
 
 interface TooltipPayloadItem {
@@ -36,27 +36,27 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
     if (active && payload && payload.length) {
         const dataPoint = payload[0].payload;
         const isBarChart = payload.some((p: TooltipPayloadItem) => p.dataKey === 'absMax');
-        
+
         let displayItems: TooltipPayloadItem[] = [];
         if (isBarChart && dataPoint.pkgStats) {
-            displayItems = visiblePackages.map(pkg => {
+            displayItems = visiblePackages.map((pkg) => {
                 const stats = dataPoint.pkgStats[pkg.name] || { downloads: 0, rateChangePercent: 0 };
-                const value = viewMode === 'percent' ? stats.rateChangePercent : stats.downloads;
+                const value = viewMode === ViewMode.percent ? stats.rateChangePercent : stats.downloads;
                 return {
                     dataKey: pkg.name,
                     name: pkg.name,
                     value,
                     payload: dataPoint,
-                    color: packageColors[packages.findIndex(p => p.name === pkg.name) % packageColors.length]
+                    color: packageColors[packages.findIndex((p) => p.name === pkg.name) % packageColors.length],
                 };
             });
         } else {
             displayItems = payload.map((p: TooltipPayloadItem) => {
-                const matchedPkg = packages.find(pkg => pkg.name === p.name);
+                const matchedPkg = packages.find((pkg) => pkg.name === p.name);
                 return {
                     ...p,
                     dataKey: matchedPkg ? matchedPkg.name : p.dataKey,
-                    color: p.stroke || p.color || p.fill
+                    color: p.stroke || p.color || p.fill,
                 };
             });
         }
@@ -76,16 +76,23 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                         const formattedPct = `${pctSign}${pct.toFixed(1)}%`;
                         const formattedAbs = formatNumber(abs);
 
-                        const primaryValue = viewMode === 'percent' ? formattedPct : formattedAbs;
-                        const secondaryValue = viewMode === 'percent' ? `(${formattedAbs})` : `(${formattedPct})`;
+                        const primaryValue = viewMode === ViewMode.percent ? formattedPct : formattedAbs;
+                        const secondaryValue = viewMode === ViewMode.percent
+                            ? `(${formattedAbs})`
+                            : `(${formattedPct})`;
 
-                        const primaryColor = viewMode === 'percent' ? pctColor : '#f8fafc';
-                        const secondaryColor = viewMode === 'percent' ? '#94a3b8' : pctColor;
+                        const primaryColor = viewMode === ViewMode.percent ? pctColor : '#f8fafc';
+                        const secondaryColor = viewMode === ViewMode.percent ? '#94a3b8' : pctColor;
 
                         return (
                             <Fragment key={pkgId || index}>
                                 <div className="tooltip-row-label">
-                                    <span className="stat-label" style={{ color: entry.color }}>{entry.name}:</span>
+                                    <span
+                                        className="stat-label"
+                                        style={{ color: entry.color }}
+                                    >
+                                        {entry.name + ':'}
+                                    </span>
                                 </div>
                                 <div className="tooltip-row-value">
                                     <span className="stat-value" style={{ color: primaryColor }}>{primaryValue}</span>

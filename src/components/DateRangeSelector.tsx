@@ -30,7 +30,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
     setCustomEnd,
     setRange,
     onRangeChange,
-    isLoading
+    isLoading,
 }) => {
     return (
         <div className="search-controls-left">
@@ -47,7 +47,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                     ['wtd', 'WTD'],
                     ['mtd', 'MTD'],
                     ['ytd', 'YTD'],
-                    ['custom', 'Custom']
+                    ['custom', 'Custom'],
                 ] as const).map(([val, label]) => (
                     <button
                         key={val}
@@ -66,7 +66,10 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                     type="date"
                     className="input"
                     value={customStart}
-                    onChange={(e) => { setCustomStart(e.target.value); setRange('custom'); }}
+                    onChange={(e) => {
+                        setCustomStart(e.target.value);
+                        setRange('custom');
+                    }}
                     min={minDate}
                     disabled={isLoading}
                 />
@@ -75,7 +78,10 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                     type="date"
                     className="input"
                     value={customEnd}
-                    onChange={(e) => { setCustomEnd(e.target.value); setRange('custom'); }}
+                    onChange={(e) => {
+                        setCustomEnd(e.target.value);
+                        setRange('custom');
+                    }}
                     min={minDate}
                     disabled={isLoading}
                 />

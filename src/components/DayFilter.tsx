@@ -6,10 +6,10 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { BarChart2,BarChart3, LineChart as LineChartIcon, Percent } from 'lucide-react';
+import { BarChart2, BarChart3, LineChart as LineChartIcon, Percent } from 'lucide-react';
 import { FC } from 'react';
 
-import { ChartType,ViewMode } from '../types';
+import { ChartType, ViewMode } from '../types';
 import { daysOfWeek } from '../utils';
 
 interface DayFilterProps {
@@ -21,13 +21,18 @@ interface DayFilterProps {
     setChartType: (type: ChartType) => void;
 }
 
-export const DayFilter: FC<DayFilterProps> = ({ 
-    enabledDays, setEnabledDays, viewMode, setViewMode, chartType, setChartType 
+export const DayFilter: FC<DayFilterProps> = ({
+    enabledDays,
+    setEnabledDays,
+    viewMode,
+    setViewMode,
+    chartType,
+    setChartType,
 }) => {
     const toggleDay = (day: number) => {
         if (enabledDays.includes(day)) {
             if (enabledDays.length > 1) {
-                setEnabledDays(enabledDays.filter(d => d !== day));
+                setEnabledDays(enabledDays.filter((d) => d !== day));
             }
         } else {
             setEnabledDays([...enabledDays, day].sort());
@@ -53,16 +58,16 @@ export const DayFilter: FC<DayFilterProps> = ({
 
             <div className="view-mode-toggle filter-chips">
                 <button
-                    onClick={() => setViewMode('absolute')}
-                    className={`filter-chip ${viewMode === 'absolute' ? 'active' : ''}`}
+                    onClick={() => setViewMode(ViewMode.absolute)}
+                    className={`filter-chip ${viewMode === ViewMode.absolute ? 'active' : ''}`}
                     title="Absolute Downloads"
                 >
                     <BarChart3 size={16} />
                     <span>Absolute</span>
                 </button>
                 <button
-                    onClick={() => setViewMode('percent')}
-                    className={`filter-chip ${viewMode === 'percent' ? 'active' : ''}`}
+                    onClick={() => setViewMode(ViewMode.percent)}
+                    className={`filter-chip ${viewMode === ViewMode.percent ? 'active' : ''}`}
                     title="Percentage Change"
                 >
                     <Percent size={14} />
@@ -72,16 +77,16 @@ export const DayFilter: FC<DayFilterProps> = ({
 
             <div className="view-mode-toggle filter-chips">
                 <button
-                    onClick={() => setChartType('line')}
-                    className={`filter-chip ${chartType === 'line' ? 'active' : ''}`}
+                    onClick={() => setChartType(ChartType.line)}
+                    className={`filter-chip ${chartType === ChartType.line ? 'active' : ''}`}
                     title="Line Chart"
                 >
                     <LineChartIcon size={16} />
                     <span>Line</span>
                 </button>
                 <button
-                    onClick={() => setChartType('bar')}
-                    className={`filter-chip ${chartType === 'bar' ? 'active' : ''}`}
+                    onClick={() => setChartType(ChartType.bar)}
+                    className={`filter-chip ${chartType === ChartType.bar ? 'active' : ''}`}
                     title="Bar Chart"
                 >
                     <BarChart2 size={16} />

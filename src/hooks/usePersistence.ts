@@ -6,10 +6,10 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { useCallback,useState } from 'react';
+import { useCallback, useState } from 'react';
 
-import { calculateDateRange,DateRangeType } from '../api/npmApi';
-import { AppState, ChartType, PackageConfig,ViewMode } from '../types';
+import { calculateDateRange, DateRangeType } from '../api/npmApi';
+import { AppState, ChartType, PackageConfig, ViewMode } from '../types';
 import { defaultPackage } from '../utils';
 
 const storageKey = 'npm-stat-graph-state';
@@ -17,11 +17,11 @@ const storageKey = 'npm-stat-graph-state';
 export function usePersistence() {
     const loadInitialState = (): AppState => {
         const params = new URLSearchParams(window.location.search);
- 
+
         const urlPkgsRaw = params.get('packages');
         let urlPkgs: PackageConfig[] | null = null;
         if (urlPkgsRaw) {
-            urlPkgs = urlPkgsRaw.split(',').map(p => {
+            urlPkgs = urlPkgsRaw.split(',').map((p) => {
                 const visible = !p.startsWith('!');
                 const name = visible ? p : p.substring(1);
                 return { name: decodeURIComponent(name), visible };
@@ -41,8 +41,12 @@ export function usePersistence() {
                 customStart: params.get('customStart') || '',
                 customEnd: params.get('customEnd') || '',
                 enabledDays: urlDays || [0, 1, 2, 3, 4, 5, 6],
-                viewMode: ['absolute', 'percent'].includes(params.get('viewMode') as string) ? params.get('viewMode') as ViewMode : 'absolute',
-                chartType: ['line', 'bar'].includes(params.get('chartType') as string) ? params.get('chartType') as ChartType : 'line'
+                viewMode: Object.values(ViewMode).includes(params.get('viewMode') as ViewMode)
+                    ? params.get('viewMode') as ViewMode
+                    : ViewMode.absolute,
+                chartType: Object.values(ChartType).includes(params.get('chartType') as ChartType)
+                    ? params.get('chartType') as ChartType
+                    : ChartType.line,
             };
         } else {
             const saved = localStorage.getItem(storageKey);
@@ -62,8 +66,8 @@ export function usePersistence() {
             customStart: state?.customStart || '',
             customEnd: state?.customEnd || '',
             enabledDays: state?.enabledDays || [0, 1, 2, 3, 4, 5, 6],
-            viewMode: state?.viewMode || 'absolute',
-            chartType: state?.chartType || 'line'
+            viewMode: state?.viewMode || ViewMode.absolute,
+            chartType: state?.chartType || ChartType.line,
         };
 
         if (finalState.range !== 'custom') {
@@ -78,19 +82,19 @@ export function usePersistence() {
     const [state, setState] = useState<AppState>(loadInitialState);
 
     const updateSync = useCallback((updates: Partial<AppState>) => {
-        setState(prev => {
+        setState((prev) => {
             const newState = { ...prev, ...updates };
-            
+
             // Sync LocalStorage
             localStorage.setItem(storageKey, JSON.stringify(newState));
 
             // Sync URL
             const url = new URL(window.location.href);
-            const pkgsStr = newState.packages.map(p => p.visible ? p.name : `!${p.name}`).join(',');
+            const pkgsStr = newState.packages.map((p) => p.visible ? p.name : `!${p.name}`).join(',');
             url.searchParams.set('packages', pkgsStr);
             url.searchParams.set('range', newState.range);
             url.searchParams.set('days', newState.enabledDays.join(','));
-            
+
             if (newState.range === 'custom') {
                 url.searchParams.set('customStart', newState.customStart);
                 url.searchParams.set('customEnd', newState.customEnd);
@@ -98,19 +102,20 @@ export function usePersistence() {
                 url.searchParams.delete('customStart');
                 url.searchParams.delete('customEnd');
             }
-            
+
             url.searchParams.set('viewMode', newState.viewMode);
             url.searchParams.set('chartType', newState.chartType);
-            
-            // Clean up the query string to be more human-readable after URLSearchParams encodes it.
-            // Using replaceAll with literal strings is more direct than regex.
+
+            // Clean up the query string to be more human-readable after
+            // URLSearchParams encodes it. Using replaceAll with literal strings
+            // is more direct than regex.
             const cleanSearch = url.searchParams.toString()
                 .replaceAll('%2C', ',')
                 .replaceAll('%21', '!')
                 .replaceAll('%40', '@')
                 .replaceAll('%2F', '/')
                 .replaceAll('%3A', ':');
-            
+
             const finalUrl = `${url.origin}${url.pathname}${cleanSearch ? '?' + cleanSearch : ''}${url.hash}`;
             window.history.replaceState({}, '', finalUrl);
             return newState;

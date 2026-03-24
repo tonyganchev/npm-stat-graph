@@ -6,8 +6,8 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { Activity,AlertCircle, Github } from 'lucide-react';
-import { lazy, Suspense,useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { Activity, AlertCircle, Github } from 'lucide-react';
+import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 
 import { fetchPackageStats } from './api/npmApi';
 import { DayFilter } from './components/DayFilter';
@@ -31,7 +31,7 @@ function App() {
         setError(null);
         setPartialErrors([]);
         try {
-            const activePkgs = packages.filter(p => p.name.trim() !== '');
+            const activePkgs = packages.filter((p) => p.name.trim() !== '');
             if (activePkgs.length === 0) {
                 setData(null);
                 setIsLoading(false);
@@ -43,7 +43,7 @@ function App() {
             const searchEnd = customEnd;
 
             const statsPromises =
-                activePkgs.map(pkg => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
+                activePkgs.map((pkg) => fetchPackageStats(pkg.name.trim(), searchRange, searchStart, searchEnd));
             const results = await Promise.all(statsPromises);
 
             const dayMap = new Map<string, { [pkgName: string]: number }>();
@@ -53,7 +53,7 @@ function App() {
                 const pkgName = activePkgs[index].name.trim();
                 if (res.error) extractedErrors.push(`[${res.package}] ${res.error}`);
 
-                res.downloads.forEach(d => {
+                res.downloads.forEach((d) => {
                     if (!dayMap.has(d.day)) {
                         dayMap.set(d.day, {});
                     }
@@ -63,7 +63,7 @@ function App() {
 
             const mergedData: CombinedData[] = Array.from(dayMap.entries()).map(([day, pkgsData]) => ({
                 day,
-                packages: pkgsData
+                packages: pkgsData,
             })).sort((a, b) => a.day.localeCompare(b.day));
 
             setData(mergedData);
@@ -76,7 +76,8 @@ function App() {
         }
     }, [packages, range, customStart, customEnd]);
 
-    // Trigger search on mount and when parameters change, with a 500ms debounce while typing
+    // Trigger search on mount and when parameters change, with a 500ms debounce
+    // while typing
     useEffect(() => {
         const timer = setTimeout(() => {
             if (range !== 'custom' || (customStart && customEnd)) {
@@ -86,11 +87,10 @@ function App() {
         return () => clearTimeout(timer);
     }, [handleSearch, range, customStart, customEnd]);
 
-
     // Filter out visible packages for charting
     const visiblePackages = useMemo(() =>
-        packages.filter(p => p.visible && p.name.trim() !== ''),
-        [packages]
+        packages.filter((p) => p.visible && p.name.trim() !== ''),
+    [packages],
     );
 
     // Use deferred values for charting to keep the autocomplete input snappy
@@ -148,7 +148,9 @@ function App() {
                 {partialErrors.length > 0 && !error && (
                     <div className="partial-error-container">
                         <div className="partial-error-header">
-                            <AlertCircle size={20} /> Some data could not be fetched
+                            <AlertCircle size={20} />
+                            {' '}
+                            Some data could not be fetched
                         </div>
                         <ul className="partial-error-list">
                             {partialErrors.map((err, i) => <li key={i}>{err}</li>)}
@@ -158,18 +160,51 @@ function App() {
 
                 {!error && data && data.length > 0 && (
                     <div className="charts-stack">
-                        <Suspense fallback={
+                        <Suspense fallback={(
                             <div className="chart-section">
                                 <div className="state-container">
                                     <Activity className="state-icon spinning" />
                                     <p>Loading charts...</p>
                                 </div>
                             </div>
-                        }>
-                            <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="day" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
-                            <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="week" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
-                            <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="month" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
-                            <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="year" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                        )}
+                        >
+                            <StatChart
+                                data={data}
+                                packages={deferredPackages}
+                                visiblePackages={deferredVisiblePackages}
+                                groupBy="day"
+                                enabledDays={enabledDays}
+                                viewMode={viewMode}
+                                chartType={chartType}
+                            />
+                            <StatChart
+                                data={data}
+                                packages={deferredPackages}
+                                visiblePackages={deferredVisiblePackages}
+                                groupBy="week"
+                                enabledDays={enabledDays}
+                                viewMode={viewMode}
+                                chartType={chartType}
+                            />
+                            <StatChart
+                                data={data}
+                                packages={deferredPackages}
+                                visiblePackages={deferredVisiblePackages}
+                                groupBy="month"
+                                enabledDays={enabledDays}
+                                viewMode={viewMode}
+                                chartType={chartType}
+                            />
+                            <StatChart
+                                data={data}
+                                packages={deferredPackages}
+                                visiblePackages={deferredVisiblePackages}
+                                groupBy="year"
+                                enabledDays={enabledDays}
+                                viewMode={viewMode}
+                                chartType={chartType}
+                            />
                         </Suspense>
                     </div>
                 )}
@@ -177,7 +212,13 @@ function App() {
             <footer className="app-footer">
                 <div className="footer-content">
                     <p>&copy; 2026 Tony Ganchev. Licensed under the MIT License.</p>
-                    <a href="https://github.com/tonyganchev/npm-stat-graph" target="_blank" rel="noopener noreferrer" className="github-link" title="GitHub Repository">
+                    <a
+                        href="https://github.com/tonyganchev/npm-stat-graph"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="github-link"
+                        title="GitHub Repository"
+                    >
                         <Github size={18} />
                     </a>
                 </div>

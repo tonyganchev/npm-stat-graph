@@ -6,11 +6,11 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { Loader2,Search } from 'lucide-react';
+import { Loader2, Search } from 'lucide-react';
 import { FC, FormEvent } from 'react';
 
 import { calculateDateRange } from '../api/npmApi';
-import { DateRangeType,PackageConfig } from '../types';
+import { DateRangeType, PackageConfig } from '../types';
 import { DateRangeSelector } from './DateRangeSelector';
 import { PackageSelector } from './PackageSelector';
 
@@ -28,7 +28,7 @@ interface SearchControlsProps {
 }
 
 export const SearchControls: FC<SearchControlsProps> = ({
-    packages, setPackages, range, setRange, customStart, setCustomStart, customEnd, setCustomEnd, onSearch, isLoading
+    packages, setPackages, range, setRange, customStart, setCustomStart, customEnd, setCustomEnd, onSearch, isLoading,
 }) => {
     const handleSubmit = (e: FormEvent) => {
         e.preventDefault();
@@ -45,7 +45,7 @@ export const SearchControls: FC<SearchControlsProps> = ({
         }
     };
 
-    const hasPackages = packages.some(p => p.name.length > 0);
+    const hasPackages = packages.some((p) => p.name.length > 0);
 
     return (
         <form onSubmit={handleSubmit} className="search-controls-wrapper">

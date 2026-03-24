@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { ArrowUpDown,Eye, EyeOff, Plus, X } from 'lucide-react';
+import { ArrowUpDown, Eye, EyeOff, Plus, X } from 'lucide-react';
 import { CSSProperties, FC, useState } from 'react';
 
 import { PackageConfig } from '../types';
@@ -22,7 +22,7 @@ interface PackageSelectorProps {
 export const PackageSelector: FC<PackageSelectorProps> = ({
     packages,
     setPackages,
-    isLoading
+    isLoading,
 }) => {
     const [hoveredSwapIndex, setHoveredSwapIndex] = useState<number | null>(null);
 
@@ -78,15 +78,25 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
                         disabled={false}
                         style={{
                             '--pkg-color': packageColors[i % packageColors.length],
-                            opacity: pkg.visible ? 1 : 0.5
+                            opacity: pkg.visible ? 1 : 0.5,
                         } as CSSProperties}
                     />
 
-                    <button type="button" className="btn-icon" onClick={() => toggleVisibility(i)} title="Toggle Visibility">
+                    <button
+                        type="button"
+                        className="btn-icon"
+                        onClick={() => toggleVisibility(i)}
+                        title="Toggle Visibility"
+                    >
                         {pkg.visible ? <Eye size={20} /> : <EyeOff size={20} />}
                     </button>
 
-                    <button type="button" className="btn-icon error" onClick={() => removePackage(i)} title="Remove Package">
+                    <button
+                        type="button"
+                        className="btn-icon error"
+                        onClick={() => removePackage(i)}
+                        title="Remove Package"
+                    >
                         <X size={20} />
                     </button>
 
@@ -109,7 +119,8 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
 
             <div className="search-actions">
                 <button type="button" className="btn" onClick={addPackage} disabled={isLoading}>
-                    <Plus size={16} /> Add Package
+                    <Plus size={16} />
+                    Add Package
                 </button>
             </div>
         </div>

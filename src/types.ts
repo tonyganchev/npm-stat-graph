@@ -24,17 +24,23 @@ export interface ChartDataPoint {
     day: string;
     formattedDate: string;
     shortDate: string;
-    pkgStats: Record<string, { downloads: number, rateChangePercent: number }>;
+    pkgStats: Record<string, { downloads: number; rateChangePercent: number }>;
     absMax: number;
     displayMax: number;
     displayMin: number;
 }
 
-export type GroupBy = "day" | "week" | "month" | "year";
+export type GroupBy = 'day' | 'week' | 'month' | 'year';
 
-export type ViewMode = "absolute" | "percent";
+export enum ViewMode {
+    absolute = 'absolute',
+    percent = 'percent',
+}
 
-export type ChartType = "line" | "bar";
+export enum ChartType {
+    line = 'line',
+    bar = 'bar',
+}
 
 export interface AppState {
     packages: PackageConfig[];

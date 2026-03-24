@@ -17,7 +17,7 @@ export const packageColors = [
     '#a78bfa', // Purple
     '#f87171', // Red
     '#2dd4bf', // Teal
-    '#fb923c'  // Orange
+    '#fb923c', // Orange
 ];
 
 export const daysOfWeek = [
@@ -29,4 +29,3 @@ export const daysOfWeek = [
     { label: 'Fri', value: 5 },
     { label: 'Sat', value: 6 },
 ];
-
