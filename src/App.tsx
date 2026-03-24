@@ -6,10 +6,10 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { useState, useEffect, useCallback, useMemo, useDeferredValue } from 'react';
-import { AlertCircle, Github } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo, useDeferredValue, lazy, Suspense } from 'react';
+import { AlertCircle, Github, Activity } from 'lucide-react';
 import { SearchControls } from './components/SearchControls';
-import { StatChart } from './components/StatChart';
+const StatChart = lazy(() => import('./components/StatChart'));
 import { DayFilter } from './components/DayFilter';
 import { fetchPackageStats } from './api/npmApi';
 import { CombinedData } from './types';
@@ -147,10 +147,19 @@ function App() {
 
                 {!error && data && data.length > 0 && (
                     <div className="charts-stack">
-                        <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="day" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
-                        <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="week" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
-                        <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="month" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
-                        <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="year" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                        <Suspense fallback={
+                            <div className="chart-section">
+                                <div className="state-container">
+                                    <Activity className="state-icon spinning" />
+                                    <p>Loading charts...</p>
+                                </div>
+                            </div>
+                        }>
+                            <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="day" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                            <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="week" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                            <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="month" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                            <StatChart data={data} packages={deferredPackages} visiblePackages={deferredVisiblePackages} groupBy="year" enabledDays={enabledDays} viewMode={viewMode} chartType={chartType} />
+                        </Suspense>
                     </div>
                 )}
             </main>

@@ -8,11 +8,25 @@
 
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { visualizer } from 'rollup-plugin-visualizer'
 
 export default defineConfig({
     base: '/npm-stat-graph/',
+    resolve: {
+        alias: {
+            'react': 'preact/compat',
+            'react-dom/test-utils': 'preact/test-utils',
+            'react-dom': 'preact/compat',
+            'react/jsx-runtime': 'preact/jsx-runtime',
+        }
+    },
     plugins: [
-        react()
+        react(),
+        visualizer({
+            filename: 'stats.html',
+            gzipSize: true,
+            brotliSize: true,
+        })
     ],
     server: {
         host: '0.0.0.0',

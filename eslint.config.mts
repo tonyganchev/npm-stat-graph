@@ -7,20 +7,20 @@
  */
 
 import headerPlugin, { HeaderOptions, HeaderRuleConfig } from '@tony.ganchev/eslint-plugin-header';
-import tsParser from '@typescript-eslint/parser';
 import tsPlugin from '@typescript-eslint/eslint-plugin';
+import tsParser from '@typescript-eslint/parser';
+import { ESLint } from 'eslint';
 import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
-import globals from 'globals';
-import { Linter } from 'eslint';
 import { defineConfig } from 'eslint/config';
+import globals from 'globals';
 
 export default defineConfig([
   {
     ignores: ['dist', 'node_modules'],
   },
   {
-    files: ['**/*.ts', '**/*.tsx'],
+    files: ['**/*.ts', '**/*.tsx', '**/*.mts'],
     languageOptions: {
       parser: tsParser,
       ecmaVersion: 'latest',
@@ -32,13 +32,13 @@ export default defineConfig([
     },
     plugins: {
       '@tony.ganchev/header': headerPlugin,
-      '@typescript-eslint': tsPlugin,
-      'react-hooks': reactHooks,
+      '@typescript-eslint': tsPlugin as unknown as ESLint.Plugin,
+      'react-hooks': reactHooks as unknown as ESLint.Plugin,
       'react-refresh': reactRefresh,
     },
     rules: {
-      ...tsPlugin.configs.recommended.rules as Record<string, Linter.RuleEntry>,
-      ...reactHooks.configs.recommended.rules as Record<string, Linter.RuleEntry>,
+      ...tsPlugin.configs.recommended.rules,
+      ...reactHooks.configs.flat.recommended.rules,
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

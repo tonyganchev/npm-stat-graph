@@ -203,3 +203,5 @@ export const StatChart = memo(({
         </div>
     );
 });
+ 
+export default StatChart;
