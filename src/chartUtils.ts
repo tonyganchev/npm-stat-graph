@@ -10,26 +10,32 @@ import { format, parseISO, startOfMonth, startOfWeek, startOfYear } from 'date-f
 
 import { ChartDataPoint, CombinedData, GroupBy, PackageConfig } from './types';
 
+const formatMdy = 'MMM d, yyyy' as const;
+const formatMd = 'MMM d' as const;
+const formatMy = 'MMMM yyyy' as const;
+const formatY = 'yyyy' as const;
+
+interface GroupByConfig {
+    startDateFn: (d: Date) => Date;
+    longFormat: string;
+    shortFormat: string;
+}
+const config: Record<GroupBy, GroupByConfig> = {
+    day: { startDateFn: (d: Date) => d, longFormat: formatMdy, shortFormat: formatMd },
+    week: {
+        startDateFn: (d: Date) => startOfWeek(d, { weekStartsOn: 1 }),
+        longFormat: "'Week of' " + formatMdy,
+        shortFormat: formatMd,
+    },
+    month: { startDateFn: startOfMonth, longFormat: formatMy, shortFormat: formatMy },
+    year: { startDateFn: startOfYear, longFormat: formatY, shortFormat: formatY },
+};
+
 export function groupChartData(
     data: CombinedData[],
     groupBy: GroupBy,
     packages: PackageConfig[],
 ) {
-    const formatMdy = 'MMM d, yyyy';
-    const formatMd = 'MMM d';
-    const formatMy = 'MMMM yyyy';
-    const formatY = 'yyyy';
-    const config = {
-        day: { startDateFn: (d: Date) => d, longFormat: formatMdy, shortFormat: formatMd },
-        week: {
-            startDateFn: (d: Date) => startOfWeek(d, { weekStartsOn: 1 }),
-            longFormat: "'Week of' " + formatMdy,
-            shortFormat: formatMd,
-        },
-        month: { startDateFn: startOfMonth, longFormat: formatMy, shortFormat: formatMy },
-        year: { startDateFn: startOfYear, longFormat: formatY, shortFormat: formatY },
-    };
-
     const { startDateFn, longFormat, shortFormat } = config[groupBy];
 
     return Map.groupBy(data, (item) => format(startDateFn(parseISO(item.day)), 'yyyy-MM-dd')).entries().map(
