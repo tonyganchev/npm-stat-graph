@@ -53,6 +53,7 @@ export default defineConfig([
         rules: {
             ...reactHooks.configs.flat.recommended.rules,
             ...tsPlugin.configs.recommended.rules,
+            '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
             '@stylistic/operator-linebreak': ['error', 'before', { overrides: { '=': 'after' } }],
             '@stylistic/max-len': [
                 'error',
