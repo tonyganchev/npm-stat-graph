@@ -15,33 +15,31 @@ export function groupChartData(
     groupBy: GroupBy,
     packages: PackageConfig[],
 ) {
+    const formatMdy = 'MMM d, yyyy';
+    const formatMd = 'MMM d';
+    const formatMy = 'MMMM yyyy';
+    const formatY = 'yyyy';
     const config = {
-        day: { start: (d: Date) => d, fmt: 'MMM d, yyyy', shortFmt: 'MMM d' },
+        day: { startDateFn: (d: Date) => d, longFormat: formatMdy, shortFormat: formatMd },
         week: {
-            start: (d: Date) => startOfWeek(d, { weekStartsOn: 1 }),
-            fmt: "'Week of' MMM d, yyyy",
-            shortFmt: 'MMM d',
+            startDateFn: (d: Date) => startOfWeek(d, { weekStartsOn: 1 }),
+            longFormat: "'Week of' " + formatMdy,
+            shortFormat: formatMd,
         },
-        month: { start: startOfMonth, fmt: 'MMMM yyyy', shortFmt: 'MMM yyyy' },
-        year: { start: startOfYear, fmt: 'yyyy', shortFmt: 'yyyy' },
+        month: { startDateFn: startOfMonth, longFormat: formatMy, shortFormat: formatMy },
+        year: { startDateFn: startOfYear, longFormat: formatY, shortFormat: formatY },
     };
 
-    const { start: getStart, fmt, shortFmt } = config[groupBy];
+    const { startDateFn, longFormat, shortFormat } = config[groupBy];
 
-    const bucketsMap = Map.groupBy(data, (item) => {
-        const groupStart = getStart(parseISO(item.day));
-        return format(groupStart, 'yyyy-MM-dd');
-    });
-
-    return bucketsMap.entries().map(
+    return Map.groupBy(data, (item) => format(startDateFn(parseISO(item.day)), 'yyyy-MM-dd')).entries().map(
         ([key, items]): ChartDataPoint => {
-            const firstDate = parseISO(items[0].day);
-            const groupStart = getStart(firstDate);
+            const groupStart = startDateFn(parseISO(items[0].day));
 
             return {
                 day: key,
-                formattedDate: format(groupStart, fmt),
-                shortDate: format(groupStart, shortFmt),
+                formattedDate: format(groupStart, longFormat),
+                shortDate: format(groupStart, shortFormat),
                 pkgStats: Object.fromEntries(packages.map((p) => [
                     p.name,
                     {
