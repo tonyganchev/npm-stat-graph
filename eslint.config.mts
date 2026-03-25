@@ -54,6 +54,33 @@ export default defineConfig([
             ...reactHooks.configs.flat.recommended.rules,
             ...tsPlugin.configs.recommended.rules,
             '@stylistic/quotes': ['error', 'single', { avoidEscape: true }],
+            '@typescript-eslint/naming-convention': [
+                'error',
+                {
+                    selector: 'variable',
+                    format: [
+                        'camelCase',
+                        // React is disgusting!
+                        'PascalCase',
+                    ],
+                },
+                {
+                    selector: 'function',
+                    format: [
+                        'camelCase',
+                        // React is disgusting!
+                        'PascalCase',
+                    ],
+                },
+                {
+                    selector: 'enumMember',
+                    format: ['camelCase'],
+                },
+                {
+                    selector: 'typeLike',
+                    format: ['PascalCase'],
+                },
+            ],
             '@stylistic/operator-linebreak': ['error', 'before', { overrides: { '=': 'after' } }],
             '@stylistic/max-len': [
                 'error',

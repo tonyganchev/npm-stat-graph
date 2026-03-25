@@ -76,13 +76,13 @@ export function calculateDateRange(rangeType: DateRangeType): { start: string; e
 }
 
 const apiCache = new Map<string, { data: NpmStatsResponse; timestamp: number }>();
-const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes (down from 10)
-const MAX_CACHE_ENTRIES = 50;
+const cacheExpiry = 5 * 60 * 1000; // 5 minutes (down from 10)
+const maxCacheEntries = 50;
 
 async function fetchWithCache(url: string, isImmutable: boolean): Promise<Partial<NpmStatsResponse>> {
     const cached = apiCache.get(url);
     if (cached) {
-        const isExpired = Date.now() - cached.timestamp > CACHE_EXPIRY;
+        const isExpired = Date.now() - cached.timestamp > cacheExpiry;
         if (isImmutable || !isExpired) {
             // Keep recent items at the end of the Map for LRU behavior
             apiCache.delete(url);
@@ -105,7 +105,7 @@ async function fetchWithCache(url: string, isImmutable: boolean): Promise<Partia
     const data = await response.json();
 
     // Implementation of simple LRU eviction
-    if (apiCache.size >= MAX_CACHE_ENTRIES) {
+    if (apiCache.size >= maxCacheEntries) {
         const firstKey = apiCache.keys().next().value;
         if (firstKey) apiCache.delete(firstKey);
     }
