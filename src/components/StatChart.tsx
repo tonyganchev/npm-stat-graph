@@ -155,6 +155,7 @@ const statChart = memo(({
                 <div className="stat-summary stat-summary-main">
                     <span className="stat-label">
                         {groupByTitle[groupBy]}
+                        &nbsp;
                         {viewModeTitle[viewMode]}
                     </span>
                 </div>
