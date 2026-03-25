@@ -76,18 +76,25 @@ export function calculateDateRange(rangeType: DateRangeType): { start: string; e
 }
 
 const apiCache = new Map<string, { data: NpmStatsResponse; timestamp: number }>();
-const CACHE_EXPIRY = 10 * 60 * 1000; // 10 minutes
+const CACHE_EXPIRY = 5 * 60 * 1000; // 5 minutes (down from 10)
+const MAX_CACHE_ENTRIES = 50;
 
 async function fetchWithCache(url: string, isImmutable: boolean): Promise<Partial<NpmStatsResponse>> {
     const cached = apiCache.get(url);
     if (cached) {
         const isExpired = Date.now() - cached.timestamp > CACHE_EXPIRY;
         if (isImmutable || !isExpired) {
+            // Keep recent items at the end of the Map for LRU behavior
+            apiCache.delete(url);
+            apiCache.set(url, cached);
             return cached.data;
         }
     }
 
-    const response = await fetch(url);
+    const response = await fetch(url, {
+        cache: isImmutable ? 'default' : 'no-cache',
+    });
+
     if (!response.ok) {
         if (response.status === 404) {
             return { downloads: [] };
@@ -96,6 +103,13 @@ async function fetchWithCache(url: string, isImmutable: boolean): Promise<Partia
     }
 
     const data = await response.json();
+
+    // Implementation of simple LRU eviction
+    if (apiCache.size >= MAX_CACHE_ENTRIES) {
+        const firstKey = apiCache.keys().next().value;
+        if (firstKey) apiCache.delete(firstKey);
+    }
+
     apiCache.set(url, { data, timestamp: Date.now() });
     return data;
 }
@@ -118,7 +132,13 @@ export async function fetchPackageStats(
     const encodedPackageName = encodeURIComponent(packageName);
 
     const baseUrl = 'https://api.npmjs.org';
-    const todayStr = new Date().toISOString().split('T')[0];
+    const today = new Date();
+
+    // Data older than 3 days is considered stable enough to cache permanently.
+    // NPM data for "yesterday" often updates/flattens for 48-72 hours.
+    const thresholdDate = new Date(today);
+    thresholdDate.setDate(thresholdDate.getDate() - 3);
+    const thresholdDateStr = thresholdDate.toISOString().split('T')[0];
 
     const startYear = parseInt(exactStart.substring(0, 4), 10);
     const endYear = parseInt(exactEnd.substring(0, 4), 10);
@@ -139,7 +159,7 @@ export async function fetchPackageStats(
     try {
         const fetchPromises = intervals.map(async (interval) => {
             const url = `${baseUrl}/downloads/range/${interval.start}:${interval.end}/${encodedPackageName}`;
-            const isImmutable = interval.end < todayStr;
+            const isImmutable = interval.end < thresholdDateStr;
             const data = await fetchWithCache(url, isImmutable);
             return data;
         });
