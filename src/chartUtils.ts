@@ -17,7 +17,7 @@ export function groupChartData(
 ) {
     const config = {
         day: { start: (d: Date) => d, fmt: 'MMM d, yyyy', shortFmt: 'MMM d' },
-        week: { start: startOfWeek, fmt: 'Week of MMM d, yyyy', shortFmt: 'MMM d' },
+        week: { start: startOfWeek, fmt: "'Week of' MMM d, yyyy", shortFmt: 'MMM d' },
         month: { start: startOfMonth, fmt: 'MMMM yyyy', shortFmt: 'MMM yyyy' },
         year: { start: startOfYear, fmt: 'yyyy', shortFmt: 'yyyy' },
     };
