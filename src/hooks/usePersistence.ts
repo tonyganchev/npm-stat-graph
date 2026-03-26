@@ -14,11 +14,24 @@ import { defaultPackage } from '../utils';
 
 const storageKey = 'npm-stat-graph-state';
 
+const defaultDateRange = 'last-30-days';
+const allWeekDays = Array.from({ length: 7 }, (_, i) => i);
+
+const paramKeys = {
+    packages: 'packages',
+    range: 'range',
+    start: 'customStart',
+    end: 'customEnd',
+    viewMode: 'viewMode',
+    chartType: 'chartType',
+    days: 'days',
+} as const;
+
 export function usePersistence() {
     const loadInitialState = (): AppState => {
         const params = new URLSearchParams(window.location.search);
 
-        const urlPkgsRaw = params.get('packages');
+        const urlPkgsRaw = params.get(paramKeys.packages);
         let urlPkgs: PackageConfig[] | null = null;
         if (urlPkgsRaw) {
             urlPkgs = urlPkgsRaw.split(',').map((p) => {
@@ -28,8 +41,8 @@ export function usePersistence() {
             });
         }
 
-        const urlRange = params.get('range') as DateRangeType;
-        const urlDaysRaw = params.get('days');
+        const urlRange = params.get(paramKeys.range) as DateRangeType;
+        const urlDaysRaw = params.get(paramKeys.days);
         const urlDays = urlDaysRaw ? urlDaysRaw.split(',').map(Number) : null;
 
         let state: Partial<AppState> | null = null;
@@ -37,15 +50,15 @@ export function usePersistence() {
         if (urlPkgs && urlPkgs.length > 0) {
             state = {
                 packages: urlPkgs,
-                range: urlRange || 'last-30-days',
-                customStart: params.get('customStart') || '',
-                customEnd: params.get('customEnd') || '',
-                enabledDays: urlDays || [0, 1, 2, 3, 4, 5, 6],
-                viewMode: Object.values(ViewMode).includes(params.get('viewMode') as ViewMode)
-                    ? params.get('viewMode') as ViewMode
+                range: urlRange || defaultDateRange,
+                customStart: params.get(paramKeys.start) || '',
+                customEnd: params.get(paramKeys.end) || '',
+                enabledDays: urlDays || allWeekDays,
+                viewMode: Object.values(ViewMode).includes(params.get(paramKeys.viewMode) as ViewMode)
+                    ? params.get(paramKeys.viewMode) as ViewMode
                     : ViewMode.absolute,
-                chartType: Object.values(ChartType).includes(params.get('chartType') as ChartType)
-                    ? params.get('chartType') as ChartType
+                chartType: Object.values(ChartType).includes(params.get(paramKeys.chartType) as ChartType)
+                    ? params.get(paramKeys.chartType) as ChartType
                     : ChartType.line,
             };
         } else {
@@ -62,10 +75,10 @@ export function usePersistence() {
 
         const finalState: AppState = {
             packages: state?.packages || [{ name: defaultPackage, visible: true }],
-            range: state?.range || 'last-30-days',
+            range: state?.range || defaultDateRange,
             customStart: state?.customStart || '',
             customEnd: state?.customEnd || '',
-            enabledDays: state?.enabledDays || [0, 1, 2, 3, 4, 5, 6],
+            enabledDays: state?.enabledDays || allWeekDays,
             viewMode: state?.viewMode || ViewMode.absolute,
             chartType: state?.chartType || ChartType.line,
         };
@@ -91,24 +104,21 @@ export function usePersistence() {
             // Sync URL
             const url = new URL(window.location.href);
             const pkgsStr = newState.packages.map((p) => p.visible ? p.name : `!${p.name}`).join(',');
-            url.searchParams.set('packages', pkgsStr);
-            url.searchParams.set('range', newState.range);
-            url.searchParams.set('days', newState.enabledDays.join(','));
+            url.searchParams.set(paramKeys.packages, pkgsStr);
+            url.searchParams.set(paramKeys.range, newState.range);
+            url.searchParams.set(paramKeys.days, newState.enabledDays.join(','));
 
             if (newState.range === 'custom') {
-                url.searchParams.set('customStart', newState.customStart);
-                url.searchParams.set('customEnd', newState.customEnd);
+                url.searchParams.set(paramKeys.start, newState.customStart);
+                url.searchParams.set(paramKeys.end, newState.customEnd);
             } else {
-                url.searchParams.delete('customStart');
-                url.searchParams.delete('customEnd');
+                url.searchParams.delete(paramKeys.start);
+                url.searchParams.delete(paramKeys.end);
             }
 
-            url.searchParams.set('viewMode', newState.viewMode);
-            url.searchParams.set('chartType', newState.chartType);
+            url.searchParams.set(paramKeys.viewMode, newState.viewMode);
+            url.searchParams.set(paramKeys.chartType, newState.chartType);
 
-            // Clean up the query string to be more human-readable after
-            // URLSearchParams encodes it. Using replaceAll with literal strings
-            // is more direct than regex.
             const cleanSearch = url.searchParams.toString()
                 .replaceAll('%2C', ',')
                 .replaceAll('%21', '!')
