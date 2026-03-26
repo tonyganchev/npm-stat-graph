@@ -10,9 +10,11 @@ import { Activity, AlertCircle, ExternalLink } from 'lucide-react';
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 
 import { fetchPackageStats } from './api/npmApi';
+import { ChartTypeToggle } from './components/ChartTypeToggle';
 import { DayFilter } from './components/DayFilter';
 import { GitHubIcon } from './components/GitHubIcon';
 import { SearchControls } from './components/SearchControls';
+import { ViewModeToggle } from './components/ViewModeToggle';
 import { usePersistence } from './hooks/usePersistence';
 import { CombinedData } from './types';
 
@@ -124,14 +126,22 @@ function App() {
                     isLoading={isLoading}
                 />
 
-                <DayFilter
-                    enabledDays={enabledDays}
-                    setEnabledDays={(days) => updateSync({ enabledDays: days })}
-                    viewMode={viewMode}
-                    setViewMode={(mode) => updateSync({ viewMode: mode })}
-                    chartType={chartType}
-                    setChartType={(type) => updateSync({ chartType: type })}
-                />
+                <div className="filter-panel">
+                    <DayFilter
+                        enabledDays={enabledDays}
+                        setEnabledDays={(days) => updateSync({ enabledDays: days })}
+                    />
+
+                    <ViewModeToggle
+                        viewMode={viewMode}
+                        setViewMode={(mode) => updateSync({ viewMode: mode })}
+                    />
+
+                    <ChartTypeToggle
+                        chartType={chartType}
+                        setChartType={(type) => updateSync({ chartType: type })}
+                    />
+                </div>
 
                 {error && (
                     <div className="state-container">
