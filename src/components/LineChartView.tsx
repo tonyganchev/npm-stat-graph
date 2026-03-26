@@ -108,19 +108,44 @@ export const LineChartView: FC<LineChartViewProps> = ({
             {visiblePackages.map((pkg) => {
                 const originalIndex = packages.findIndex((p) => p.name === pkg.name);
                 const color = packageColors[originalIndex % packageColors.length];
+
+                const values = chartData.map((d) =>
+                    viewMode === ViewMode.percent
+                        ? d.pkgStats[pkg.name]?.rateChangePercent
+                        : d.pkgStats[pkg.name]?.downloads,
+                ).filter((v): v is number => typeof v === 'number');
+
+                const minVal = values.length > 0 ? Math.min(...values) : null;
+                const maxVal = values.length > 0 ? Math.max(...values) : null;
+
                 return (
-                    <Line
-                        key={pkg.name}
-                        type="monotone"
-                        dataKey={packageKeys[pkg.name]}
-                        name={pkg.name}
-                        stroke={color}
-                        strokeWidth={1.5}
-                        animationDuration={1500}
-                        animationEasing="ease-in-out"
-                        dot={showDots ? { r: 3, fill: 'var(--card-bg)', stroke: color, strokeWidth: 1.5 } : false}
-                        activeDot={{ r: 4, fill: color, stroke: 'var(--text-primary)', strokeWidth: 1.5 }}
-                    />
+                    <g key={pkg.name}>
+                        {minVal !== null && (
+                            <ReferenceLine
+                                y={minVal}
+                                stroke={color}
+                                strokeDasharray="5 2"
+                            />
+                        )}
+                        {maxVal !== null && (
+                            <ReferenceLine
+                                y={maxVal}
+                                stroke={color}
+                                strokeDasharray="5 2"
+                            />
+                        )}
+                        <Line
+                            type="monotone"
+                            dataKey={packageKeys[pkg.name]}
+                            name={pkg.name}
+                            stroke={color}
+                            strokeWidth={1.5}
+                            animationDuration={1500}
+                            animationEasing="ease-in-out"
+                            dot={showDots ? { r: 3, fill: 'var(--card-bg)', stroke: color, strokeWidth: 1.5 } : false}
+                            activeDot={{ r: 4, fill: color, stroke: 'var(--text-primary)', strokeWidth: 1.5 }}
+                        />
+                    </g>
                 );
             })}
         </LineChart>

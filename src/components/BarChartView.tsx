@@ -172,6 +172,39 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 </>
             )}
 
+            {visiblePackages.map((pkg) => {
+                const originalIndex = packages.findIndex((p) => p.name === pkg.name);
+                const color = packageColors[originalIndex % packageColors.length];
+
+                const values = chartData.map((d) =>
+                    viewMode === ViewMode.percent
+                        ? d.pkgStats[pkg.name]?.rateChangePercent
+                        : d.pkgStats[pkg.name]?.downloads,
+                ).filter((v): v is number => typeof v === 'number');
+
+                const minVal = values.length > 0 ? Math.min(...values) : null;
+                const maxVal = values.length > 0 ? Math.max(...values) : null;
+
+                return (
+                    <g key={`ref-lines-${pkg.name}`}>
+                        {minVal !== null && (
+                            <ReferenceLine
+                                y={minVal}
+                                stroke={color}
+                                strokeDasharray="5 2"
+                            />
+                        )}
+                        {maxVal !== null && (
+                            <ReferenceLine
+                                y={maxVal}
+                                stroke={color}
+                                strokeDasharray="5 2"
+                            />
+                        )}
+                    </g>
+                );
+            })}
+
             <Bar
                 key={`bar-series-${visiblePackages.map((p) => p.name).join(',')}-${viewMode}`}
                 dataKey="absMax"
