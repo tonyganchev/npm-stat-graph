@@ -15,7 +15,8 @@ import {
     ReferenceLine,
     Tooltip,
     XAxis,
-    YAxis } from 'recharts';
+    YAxis,
+} from 'recharts';
 
 import { ChartDataPoint, PackageConfig, ViewMode } from '../types';
 import { packageColors } from '../utils';
@@ -40,18 +41,19 @@ export const LineChartView: FC<LineChartViewProps> = ({
     chartWidth,
     height,
 }) => {
-    const enrichedData = useMemo(() => {
-        return chartData.map((d) => {
-            const newObj: Record<string, unknown> = { ...d };
-            visiblePackages.forEach((pkg) => {
-                const safeName = pkg.name.replace(/[^a-zA-Z0-9-]/g, '_');
-                newObj[`val_${safeName}`] = viewMode === ViewMode.percent
-                    ? d.pkgStats[pkg.name]?.rateChangePercent
-                    : d.pkgStats[pkg.name]?.downloads;
-            });
-            return newObj;
+    const packageKeys = useMemo(
+        () => Object.fromEntries(visiblePackages.map((p) => [p.name, 'pkg_' + p.name.replace(/[^a-zA-Z0-9-]/g, '_')])),
+        [visiblePackages]);
+
+    const enrichedData = useMemo(() => chartData.map((d) => {
+        const newObj: Record<string, unknown> = { ...d };
+        visiblePackages.forEach((pkg) => {
+            newObj[packageKeys[pkg.name]] = viewMode === ViewMode.percent
+                ? d.pkgStats[pkg.name]?.rateChangePercent
+                : d.pkgStats[pkg.name]?.downloads;
         });
-    }, [chartData, visiblePackages, viewMode]);
+        return newObj;
+    }), [chartData, visiblePackages, viewMode, packageKeys]);
 
     return (
         <LineChart
@@ -74,10 +76,15 @@ export const LineChartView: FC<LineChartViewProps> = ({
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
                 tickFormatter={(value) => {
-                    if (viewMode === ViewMode.percent) return `${value.toFixed(0)}%`;
-                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-                    if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
-                    return value;
+                    if (viewMode === ViewMode.percent) {
+                        return `${value.toFixed(0)}%`;
+                    } else if (value >= 1000000) {
+                        return `${(value / 1000000).toFixed(1)}M`;
+                    } else if (value >= 1000) {
+                        return `${(value / 1000).toFixed(0)}k`;
+                    } else {
+                        return value;
+                    }
                 }}
                 width={60}
             />
@@ -105,7 +112,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
                     <Line
                         key={pkg.name}
                         type="monotone"
-                        dataKey={`val_${pkg.name.replace(/[^a-zA-Z0-9-]/g, '_')}`}
+                        dataKey={packageKeys[pkg.name]}
                         name={pkg.name}
                         stroke={color}
                         strokeWidth={1.5}
