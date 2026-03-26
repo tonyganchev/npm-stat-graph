@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { addDays, addMonths, format, startOfDay } from 'date-fns';
+import { addMonths, format, startOfDay } from 'date-fns';
 import { FC } from 'react';
 
 import { DateRangeType } from '../types';
