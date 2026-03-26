@@ -6,11 +6,12 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { Activity, AlertCircle, Github } from 'lucide-react';
+import { Activity, AlertCircle, ExternalLink } from 'lucide-react';
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
 
 import { fetchPackageStats } from './api/npmApi';
 import { DayFilter } from './components/DayFilter';
+import { GitHubIcon } from './components/GitHubIcon';
 import { SearchControls } from './components/SearchControls';
 import { usePersistence } from './hooks/usePersistence';
 import { CombinedData } from './types';
@@ -88,10 +89,7 @@ function App() {
     }, [handleSearch, range, customStart, customEnd]);
 
     // Filter out visible packages for charting
-    const visiblePackages = useMemo(() =>
-        packages.filter((p) => p.visible && p.name.trim() !== ''),
-    [packages],
-    );
+    const visiblePackages = useMemo(() => packages.filter((p) => p.visible && p.name.trim() !== ''), [packages]);
 
     // Use deferred values for charting to keep the autocomplete input snappy
     const deferredPackages = useDeferredValue(packages);
@@ -211,16 +209,20 @@ function App() {
             </main>
             <footer className="app-footer">
                 <div className="footer-content">
-                    <p>&copy; 2026 Tony Ganchev. Licensed under the MIT License.</p>
-                    <a
-                        href="https://github.com/tonyganchev/npm-stat-graph"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="github-link"
-                        title="GitHub Repository"
-                    >
-                        <Github size={18} />
-                    </a>
+                    <p>
+                        &copy; 2026 Tony Ganchev. Licensed under the MIT License.
+                        <a
+                            href="https://github.com/tonyganchev/npm-stat-graph"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="github-link"
+                            title="GitHub Repository"
+                        >
+                            <GitHubIcon />
+                            GitHub project
+                            <ExternalLink size={16} />
+                        </a>
+                    </p>
                 </div>
             </footer>
         </div>
