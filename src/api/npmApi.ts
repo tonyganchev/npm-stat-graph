@@ -38,42 +38,42 @@ export type DateRangeType =
     | 'custom';
 
 function periodStartDate(rangeType: DateRangeType) {
-    const today = startOfDay(new Date());
+    const yesterday = addDays(startOfDay(new Date()), -1);
     if (rangeType === 'last-7-days') {
-        return addDays(today, -7);
+        return addDays(yesterday, -7);
     } else if (rangeType === 'last-30-days') {
-        return addDays(today, -30);
+        return addDays(yesterday, -30);
     } else if (rangeType === 'last-year') {
-        return subMonths(today, 12);
+        return subMonths(yesterday, 12);
     } else if (rangeType === 'last-quarter') {
-        return subMonths(today, 3);
+        return subMonths(yesterday, 3);
     } else if (rangeType === 'last-6-months') {
-        return subMonths(today, 6);
+        return subMonths(yesterday, 6);
     } else if (rangeType === 'last-2-years') {
-        return subMonths(lastFullDay, 24);
+        return subMonths(yesterday, 24);
     } else if (rangeType === 'last-5-years') {
-        return subMonths(today, 60);
+        return subMonths(yesterday, 60);
     } else if (rangeType === 'last-10-years') {
-        return subMonths(today, 120);
+        return subMonths(yesterday, 120);
     } else if (rangeType === 'ytd') {
-        return startOfYear(today);
+        return startOfYear(yesterday);
     } else if (rangeType === 'mtd') {
-        return startOfMonth(today);
+        return startOfMonth(yesterday);
     } else if (rangeType === 'wtd') {
         // start of week, assuming Monday is the first day of the week
-        return startOfWeek(today, { weekStartsOn: 1 });
+        return startOfWeek(yesterday, { weekStartsOn: 1 });
     }
     throw new Error('unexpected period type: ' + rangeType);
 }
 
 export function calculateDateRange(rangeType: DateRangeType): { start: string; end: string } {
-    const today = startOfDay(new Date());
+    const yesterday = addDays(startOfDay(new Date()), -1);
     const start = periodStartDate(rangeType);
     const cappedStart = start < minDate ? minDate : start;
 
     return {
         start: format(cappedStart, isoDateFormat),
-        end: format(today, isoDateFormat),
+        end: format(yesterday, isoDateFormat),
     };
 }
 
