@@ -50,7 +50,7 @@ function periodStartDate(rangeType: DateRangeType) {
     } else if (rangeType === 'last-6-months') {
         return subMonths(today, 6);
     } else if (rangeType === 'last-2-years') {
-        return subMonths(today, 24);
+        return subMonths(lastFullDay, 24);
     } else if (rangeType === 'last-5-years') {
         return subMonths(today, 60);
     } else if (rangeType === 'last-10-years') {
