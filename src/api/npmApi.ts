@@ -8,7 +8,7 @@
 
 import { addDays, format, startOfDay, startOfMonth, startOfWeek, startOfYear, subMonths } from 'date-fns';
 
-import { minDate } from '../utils';
+import { isoDateFormat, minDate } from '../utils';
 
 export interface DownloadStat {
     downloads: number;
@@ -37,42 +37,44 @@ export type DateRangeType =
     | 'wtd'
     | 'custom';
 
+function periodStartDate(rangeType: DateRangeType) {
+    const today = startOfDay(new Date());
+    if (rangeType === 'last-7-days') {
+        return addDays(today, -7);
+    } else if (rangeType === 'last-30-days') {
+        return addDays(today, -30);
+    } else if (rangeType === 'last-year') {
+        return subMonths(today, 12);
+    } else if (rangeType === 'last-quarter') {
+        return subMonths(today, 3);
+    } else if (rangeType === 'last-6-months') {
+        return subMonths(today, 6);
+    } else if (rangeType === 'last-2-years') {
+        return subMonths(today, 24);
+    } else if (rangeType === 'last-5-years') {
+        return subMonths(today, 60);
+    } else if (rangeType === 'last-10-years') {
+        return subMonths(today, 120);
+    } else if (rangeType === 'ytd') {
+        return startOfYear(today);
+    } else if (rangeType === 'mtd') {
+        return startOfMonth(today);
+    } else if (rangeType === 'wtd') {
+        // start of week, assuming Monday is the first day of the week
+        return startOfWeek(today, { weekStartsOn: 1 });
+    }
+    throw new Error('unexpected period type: ' + rangeType);
+}
+
 export function calculateDateRange(rangeType: DateRangeType): { start: string; end: string } {
     const today = startOfDay(new Date());
-    let start = '';
-    let end = format(today, 'yyyy-MM-dd');
+    const start = periodStartDate(rangeType);
+    const cappedStart = start < minDate ? minDate : start;
 
-    if (rangeType === 'last-7-days') {
-        start = format(addDays(today, -7), 'yyyy-MM-dd');
-    } else if (rangeType === 'last-30-days') {
-        start = format(addDays(today, -30), 'yyyy-MM-dd');
-    } else if (rangeType === 'last-year') {
-        start = format(subMonths(today, 12), 'yyyy-MM-dd');
-    } else if (rangeType === 'last-quarter') {
-        start = format(subMonths(today, 3), 'yyyy-MM-dd');
-    } else if (rangeType === 'last-6-months') {
-        start = format(subMonths(today, 6), 'yyyy-MM-dd');
-    } else if (rangeType === 'last-2-years') {
-        start = format(subMonths(today, 24), 'yyyy-MM-dd');
-    } else if (rangeType === 'last-5-years') {
-        start = format(subMonths(today, 60), 'yyyy-MM-dd');
-    } else if (rangeType === 'last-10-years') {
-        start = format(subMonths(today, 120), 'yyyy-MM-dd');
-    } else if (rangeType === 'ytd') {
-        start = format(startOfYear(today), 'yyyy-MM-dd');
-    } else if (rangeType === 'mtd') {
-        start = format(startOfMonth(today), 'yyyy-MM-dd');
-    } else if (rangeType === 'wtd') {
-    // start of week, assuming Monday is the first day of the week
-        start = format(startOfWeek(today, { weekStartsOn: 1 }), 'yyyy-MM-dd');
-    }
-
-    // Cap at minDate
-    if (start && start < minDate) {
-        start = minDate;
-    }
-
-    return { start, end };
+    return {
+        start: format(cappedStart, isoDateFormat),
+        end: format(today, isoDateFormat),
+    };
 }
 
 const apiCache = new Map<string, { data: NpmStatsResponse; timestamp: number }>();

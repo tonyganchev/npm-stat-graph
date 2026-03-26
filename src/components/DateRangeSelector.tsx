@@ -6,10 +6,11 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
+import { format } from 'date-fns';
 import { FC } from 'react';
 
 import { DateRangeType } from '../types';
-import { minDate } from '../utils';
+import { isoDateFormat, minDate } from '../utils';
 
 interface DateRangeSelectorProps {
     range: DateRangeType;
@@ -70,7 +71,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                         setCustomStart(e.target.value);
                         setRange('custom');
                     }}
-                    min={minDate}
+                    min={format(minDate, isoDateFormat)}
                     disabled={isLoading}
                 />
                 <span className="date-separator">to</span>
@@ -82,7 +83,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                         setCustomEnd(e.target.value);
                         setRange('custom');
                     }}
-                    min={minDate}
+                    min={format(minDate, isoDateFormat)}
                     disabled={isLoading}
                 />
             </div>

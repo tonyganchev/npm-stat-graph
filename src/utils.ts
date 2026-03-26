@@ -7,7 +7,9 @@
  */
 
 export const defaultPackage = 'react';
-export const minDate = '2010-01-12';
+
+export const isoDateFormat = 'yyyy-MM-dd';
+export const minDate = new Date(2010, 0, 12); // Jan 12, 2010
 
 export const packageColors = [
     '#f472b6', // Pink

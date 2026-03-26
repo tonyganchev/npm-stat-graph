@@ -9,6 +9,7 @@
 import { format, parseISO, startOfMonth, startOfWeek, startOfYear } from 'date-fns';
 
 import { ChartDataPoint, CombinedData, GroupBy, PackageConfig } from './types';
+import { isoDateFormat } from './utils';
 
 const formatMdy = 'MMM d, yyyy' as const;
 const formatMd = 'MMM d' as const;
@@ -38,7 +39,7 @@ export function groupChartData(
 ) {
     const { startDateFn, longFormat, shortFormat } = config[groupBy];
 
-    return Map.groupBy(data, (item) => format(startDateFn(parseISO(item.day)), 'yyyy-MM-dd')).entries().map(
+    return Map.groupBy(data, (item) => format(startDateFn(parseISO(item.day)), isoDateFormat)).entries().map(
         ([key, items]): ChartDataPoint => {
             const groupStart = startDateFn(parseISO(items[0].day));
 
