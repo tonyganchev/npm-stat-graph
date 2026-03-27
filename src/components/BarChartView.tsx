@@ -15,9 +15,10 @@ import {
     ReferenceLine,
     Tooltip,
     XAxis,
-    YAxis } from 'recharts';
+    YAxis,
+} from 'recharts';
 
-import { ChartDataPoint, PackageConfig, ViewMode } from '../types';
+import { ChartDataPoint, PackageConfig, PeriodMetrics, ViewMode } from '../types';
 import { packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 
@@ -148,9 +149,14 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
                 tickFormatter={(value) => {
                     if (viewMode === ViewMode.percent) return `${value.toFixed(0)}%`;
-                    if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-                    if (value >= 1000) return `${(value / 1000).toFixed(0)}k`;
-                    return value;
+                    const abs = Math.abs(value);
+                    if (abs >= 1000000) {
+                        return `${(value / 1000000).toFixed(1)}M`;
+                    }
+                    if (abs >= 1000) {
+                        return `${(value / 1000).toFixed(0)}k`;
+                    }
+                    return value.toFixed(0);
                 }}
                 width={60}
             />
@@ -165,7 +171,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 cursor={{ fill: 'rgba(255, 255, 255, 0.05)' }}
             />
 
-            {viewMode === ViewMode.percent && (
+            {(viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange) && (
                 <>
                     <ReferenceArea y1={0} fill="rgba(239, 68, 68, 0.25)" />
                     <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
@@ -176,11 +182,14 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 const originalIndex = packages.findIndex((p) => p.name === pkg.name);
                 const color = packageColors[originalIndex % packageColors.length];
 
-                const values = chartData.map((d) =>
-                    viewMode === ViewMode.percent
-                        ? d.pkgStats[pkg.name]?.rateChangePercent
-                        : d.pkgStats[pkg.name]?.downloads,
-                ).filter((v): v is number => typeof v === 'number');
+                const metricToUse: Record<ViewMode, keyof PeriodMetrics> = {
+                    [ViewMode.absolute]: 'downloads',
+                    [ViewMode.absoluteChange]: 'absoluteChange',
+                    [ViewMode.percent]: 'rateChangePercent',
+                };
+                const values = chartData
+                    .map((d) => d.pkgStats[pkg.name]?.[metricToUse[viewMode]])
+                    .filter((v): v is number => typeof v === 'number');
 
                 const minVal = values.length > 0 ? Math.min(...values) : null;
                 const maxVal = values.length > 0 ? Math.max(...values) : null;
@@ -218,7 +227,11 @@ export const BarChartView: FC<BarChartViewProps> = ({
                     width?: number;
                     height?: number;
                     payload?: {
-                        pkgStats?: Record<string, { downloads: number; rateChangePercent: number }>;
+                        pkgStats?: Record<string, {
+                            downloads: number;
+                            rateChangePercent: number;
+                            absoluteChange: number;
+                        }>;
                         absMax?: number;
                     };
                 }) => {
@@ -233,9 +246,12 @@ export const BarChartView: FC<BarChartViewProps> = ({
                     return (
                         <g>
                             {visiblePackages.map((pkg) => {
+                                const stats = pkgStats[pkg.name];
                                 const val = viewMode === ViewMode.percent
-                                    ? pkgStats[pkg.name]?.rateChangePercent || 0
-                                    : pkgStats[pkg.name]?.downloads || 0;
+                                    ? stats?.rateChangePercent || 0
+                                    : viewMode === ViewMode.absoluteChange
+                                        ? stats?.absoluteChange || 0
+                                        : stats?.downloads || 0;
 
                                 const h = !absMax ? 0 : (Math.abs(val) / absMax) * maxHeight;
                                 const y = val >= 0 ? y0 - h : y0;

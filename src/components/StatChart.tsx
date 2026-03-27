@@ -49,8 +49,10 @@ const statChart = memo(({
             packages.forEach((p) => {
                 const abs = item.pkgStats[p.name]?.downloads || 0;
                 let pct = 0;
+                let diff = 0;
                 if (prev) {
                     const prevAbs = prev.pkgStats[p.name]?.downloads || 0;
+                    diff = abs - prevAbs;
                     if (prevAbs === 0) {
                         pct = abs > 0 ? 100 : 0;
                     } else {
@@ -58,14 +60,23 @@ const statChart = memo(({
                     }
                 }
 
-                newItem.pkgStats[p.name] = { downloads: abs, rateChangePercent: pct };
+                newItem.pkgStats[p.name] = {
+                    downloads: abs,
+                    rateChangePercent: pct,
+                    absoluteChange: diff,
+                };
             });
 
             // Add max value for domain calculation
             const relevantStats = visiblePackages.map((p) => newItem.pkgStats[p.name]);
-            const vals = viewMode === ViewMode.percent
-                ? relevantStats.map((s) => s?.rateChangePercent || 0)
-                : relevantStats.map((s) => s?.downloads || 0);
+            let vals: number[];
+            if (viewMode === ViewMode.percent) {
+                vals = relevantStats.map((s) => s?.rateChangePercent || 0);
+            } else if (viewMode === ViewMode.absoluteChange) {
+                vals = relevantStats.map((s) => s?.absoluteChange || 0);
+            } else {
+                vals = relevantStats.map((s) => s?.downloads || 0);
+            }
 
             newItem.absMax = Math.max(...vals.map((v) => Math.abs(v)), 1);
             newItem.displayMax = Math.max(...vals, 1);
@@ -85,13 +96,15 @@ const statChart = memo(({
                 const stats = item.pkgStats?.[p.name];
                 if (viewMode === ViewMode.percent) {
                     values[p.name] += stats?.rateChangePercent || 0;
+                } else if (viewMode === ViewMode.absoluteChange) {
+                    values[p.name] += stats?.absoluteChange || 0;
                 } else {
                     values[p.name] += stats?.downloads || 0;
                 }
             });
         });
 
-        if (viewMode === ViewMode.percent) {
+        if (viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange) {
             packages.forEach((p) => {
                 values[p.name] = values[p.name] / count;
             });
@@ -124,7 +137,12 @@ const statChart = memo(({
         return distance >= 4 || chartData.length < 200;
     }, [chartWidth, chartData.length]);
 
-    const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num);
+    const formatNumber = (num: number) => {
+        const abs = Math.abs(num);
+        if (abs >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
+        if (abs >= 1000) return `${(num / 1000).toFixed(0)}k`;
+        return num.toFixed(0);
+    };
 
     if (!chartData || chartData.length === 0 || visiblePackages.length === 0) {
         return (
@@ -147,6 +165,7 @@ const statChart = memo(({
     const viewModeTitle = {
         [ViewMode.absolute]: 'Downloads',
         [ViewMode.percent]: 'Change',
+        [ViewMode.absoluteChange]: 'Net Change',
     } as const;
 
     return (
@@ -166,7 +185,9 @@ const statChart = memo(({
                             const originalIndex = packages.findIndex((p) => p.name === pkg.name);
                             const color = packageColors[originalIndex % packageColors.length];
                             const val = packageSortValues[pkg.name] || 0;
-                            const summaryColor = viewMode === ViewMode.percent
+                            const isChange = viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange;
+
+                            const summaryColor = isChange
                                 ? (val > 0 ? '#10b981' : val < 0 ? '#ef4444' : 'var(--text-secondary)')
                                 : 'inherit';
 
@@ -176,7 +197,9 @@ const statChart = memo(({
                                     <span className="stat-value" style={{ color: summaryColor }}>
                                         {viewMode === ViewMode.percent
                                             ? `${val > 0 ? '+' : ''}${val.toFixed(1)}% avg`
-                                            : formatNumber(val)}
+                                            : viewMode === ViewMode.absoluteChange
+                                                ? `${val > 0 ? '+' : ''}${formatNumber(val)} avg`
+                                                : formatNumber(val)}
                                     </span>
                                 </div>
                             );

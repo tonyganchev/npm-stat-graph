@@ -48,12 +48,23 @@ export const LineChartView: FC<LineChartViewProps> = ({
     const enrichedData = useMemo(() => chartData.map((d) => {
         const newObj: Record<string, unknown> = { ...d };
         visiblePackages.forEach((pkg) => {
+            const stats = d.pkgStats[pkg.name];
             newObj[packageKeys[pkg.name]] = viewMode === ViewMode.percent
-                ? d.pkgStats[pkg.name]?.rateChangePercent
-                : d.pkgStats[pkg.name]?.downloads;
+                ? stats?.rateChangePercent
+                : viewMode === ViewMode.absoluteChange
+                    ? stats?.absoluteChange
+                    : stats?.downloads;
         });
         return newObj;
     }), [chartData, visiblePackages, viewMode, packageKeys]);
+
+    const formatValue = (value: number) => {
+        if (viewMode === ViewMode.percent) return `${value.toFixed(0)}%`;
+        const abs = Math.abs(value);
+        if (abs >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
+        if (abs >= 1000) return `${(value / 1000).toFixed(0)}k`;
+        return value.toFixed(0);
+    };
 
     return (
         <LineChart
@@ -75,17 +86,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
             <YAxis
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
-                tickFormatter={(value) => {
-                    if (viewMode === ViewMode.percent) {
-                        return `${value.toFixed(0)}%`;
-                    } else if (value >= 1000000) {
-                        return `${(value / 1000000).toFixed(1)}M`;
-                    } else if (value >= 1000) {
-                        return `${(value / 1000).toFixed(0)}k`;
-                    } else {
-                        return value;
-                    }
-                }}
+                tickFormatter={formatValue}
                 width={60}
             />
             <Tooltip
@@ -98,7 +99,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
                 )}
             />
 
-            {viewMode === ViewMode.percent && (
+            {(viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange) && (
                 <>
                     <ReferenceArea y1={0} fill="rgba(239, 68, 68, 0.25)" />
                     <ReferenceLine y={0} stroke="rgba(239, 68, 68, 0.8)" strokeDasharray="3 3" />
@@ -112,7 +113,9 @@ export const LineChartView: FC<LineChartViewProps> = ({
                 const values = chartData.map((d) =>
                     viewMode === ViewMode.percent
                         ? d.pkgStats[pkg.name]?.rateChangePercent
-                        : d.pkgStats[pkg.name]?.downloads,
+                        : viewMode === ViewMode.absoluteChange
+                            ? d.pkgStats[pkg.name]?.absoluteChange
+                            : d.pkgStats[pkg.name]?.downloads,
                 ).filter((v): v is number => typeof v === 'number');
 
                 const minVal = values.length > 0 ? Math.min(...values) : null;

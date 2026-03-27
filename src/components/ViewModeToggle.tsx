@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { BarChart3, Percent } from 'lucide-react';
+import { BarChart3, Diff, Percent } from 'lucide-react';
 import { FC } from 'react';
 
 import { ViewMode } from '../types';
@@ -21,10 +21,18 @@ export const ViewModeToggle: FC<ViewModeToggleProps> = ({ viewMode, setViewMode 
         <button
             onClick={() => setViewMode(ViewMode.absolute)}
             className={`filter-chip ${viewMode === ViewMode.absolute ? 'active' : ''}`}
-            title="Absolute Downloads"
+            title="Total Downloads"
         >
             <BarChart3 size={16} />
             <span>Absolute</span>
+        </button>
+        <button
+            onClick={() => setViewMode(ViewMode.absoluteChange)}
+            className={`filter-chip ${viewMode === ViewMode.absoluteChange ? 'active' : ''}`}
+            title="Absolute Change (Diff)"
+        >
+            <Diff size={16} />
+            <span>Net Change</span>
         </button>
         <button
             onClick={() => setViewMode(ViewMode.percent)}
@@ -32,7 +40,7 @@ export const ViewModeToggle: FC<ViewModeToggleProps> = ({ viewMode, setViewMode 
             title="Percentage Change"
         >
             <Percent size={14} />
-            <span>Change</span>
+            <span>Percent</span>
         </button>
     </div>
 );

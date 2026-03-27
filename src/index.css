@@ -446,6 +446,10 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   border-color: transparent !important;
 }
 
+.filter-chip svg {
+  margin-right: .3rem;
+}
+
 .filter-hint {
   margin: 0;
   font-size: 0.75rem;
@@ -658,8 +662,8 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 .tooltip-grid {
   display: grid;
-  grid-template-columns: auto auto auto;
-  gap: 0.25rem 1rem;
+  grid-template-columns: auto auto auto auto;
+  gap: 0.25rem 0.75rem;
   align-items: center;
 }
 

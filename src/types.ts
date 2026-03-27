@@ -20,11 +20,17 @@ export interface CombinedData {
     packages: { [pkgName: string]: number };
 }
 
+export interface PeriodMetrics {
+    downloads: number;
+    rateChangePercent: number;
+    absoluteChange: number;
+}
+
 export interface ChartDataPoint {
     day: string;
     formattedDate: string;
     shortDate: string;
-    pkgStats: Record<string, { downloads: number; rateChangePercent: number }>;
+    pkgStats: Record<string, PeriodMetrics>;
     absMax: number;
     displayMax: number;
     displayMin: number;
@@ -35,6 +41,7 @@ export type GroupBy = 'day' | 'week' | 'month' | 'year';
 export enum ViewMode {
     absolute = 'absolute',
     percent = 'percent',
+    absoluteChange = 'absolute-change',
 }
 
 export enum ChartType {

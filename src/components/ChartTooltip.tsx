@@ -35,31 +35,28 @@ const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num)
 export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePackages, packages, viewMode }) => {
     if (active && payload && payload.length) {
         const dataPoint = payload[0].payload;
-        const isBarChart = payload.some((p: TooltipPayloadItem) => p.dataKey === 'absMax');
 
-        let displayItems: TooltipPayloadItem[] = [];
-        if (isBarChart && dataPoint.pkgStats) {
-            displayItems = visiblePackages.map((pkg) => {
-                const stats = dataPoint.pkgStats[pkg.name] || { downloads: 0, rateChangePercent: 0 };
-                const value = viewMode === ViewMode.percent ? stats.rateChangePercent : stats.downloads;
-                return {
-                    dataKey: pkg.name,
-                    name: pkg.name,
-                    value,
-                    payload: dataPoint,
-                    color: packageColors[packages.findIndex((p) => p.name === pkg.name) % packageColors.length],
-                };
-            });
-        } else {
-            displayItems = payload.map((p: TooltipPayloadItem) => {
-                const matchedPkg = packages.find((pkg) => pkg.name === p.name);
-                return {
-                    ...p,
-                    dataKey: matchedPkg ? matchedPkg.name : p.dataKey,
-                    color: p.stroke || p.color || p.fill,
-                };
-            });
-        }
+        const displayItems: TooltipPayloadItem[] = visiblePackages.map((pkg) => {
+            const stats = dataPoint.pkgStats?.[pkg.name] || {
+                downloads: 0,
+                rateChangePercent: 0,
+                absoluteChange: 0,
+            };
+
+            const value = viewMode === ViewMode.percent
+                ? stats.rateChangePercent
+                : viewMode === ViewMode.absoluteChange
+                    ? stats.absoluteChange
+                    : stats.downloads;
+
+            return {
+                dataKey: pkg.name,
+                name: pkg.name,
+                value,
+                payload: dataPoint,
+                color: packageColors[packages.findIndex((p) => p.name === pkg.name) % packageColors.length],
+            };
+        });
 
         const sortedItems = [...displayItems].sort((a, b) => (b.value || 0) - (a.value || 0));
 
@@ -67,39 +64,71 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
             <div className="custom-tooltip">
                 <p className="stat-label custom-tooltip-label">{dataPoint.formattedDate}</p>
                 <div className="tooltip-grid">
+                    <div />
+                    <div className="stat-label secondary-value" style={{ textAlign: 'right' }}>Total</div>
+                    <div className="stat-label secondary-value" style={{ textAlign: 'right' }}>Net</div>
+                    <div className="stat-label secondary-value" style={{ textAlign: 'right' }}>%</div>
+
                     {sortedItems.map((entry: TooltipPayloadItem, index: number) => {
                         const pkgId = entry.dataKey as string;
-                        const stats = entry.payload.pkgStats?.[pkgId] || { downloads: 0, rateChangePercent: 0 };
-                        const { downloads: abs, rateChangePercent: pct } = stats;
+                        const stats = entry.payload.pkgStats?.[pkgId] || {
+                            downloads: 0,
+                            rateChangePercent: 0,
+                            absoluteChange: 0,
+                        };
+                        const { downloads: abs, rateChangePercent: pct, absoluteChange: diff } = stats;
+
+                        const diffColor = diff > 0 ? '#10b981' : diff < 0 ? '#ff5252' : '#94a3b8';
                         const pctColor = pct > 0 ? '#10b981' : pct < 0 ? '#ff5252' : '#94a3b8';
-                        const pctSign = pct > 0 ? '+' : '';
-                        const formattedPct = `${pctSign}${pct.toFixed(1)}%`;
+
                         const formattedAbs = formatNumber(abs);
-
-                        const primaryValue = viewMode === ViewMode.percent ? formattedPct : formattedAbs;
-                        const secondaryValue = viewMode === ViewMode.percent
-                            ? `(${formattedAbs})`
-                            : `(${formattedPct})`;
-
-                        const primaryColor = viewMode === ViewMode.percent ? pctColor : '#f8fafc';
-                        const secondaryColor = viewMode === ViewMode.percent ? '#94a3b8' : pctColor;
+                        const formattedPct = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
+                        const formattedDiff = `${diff > 0 ? '+' : ''}${formatNumber(diff)}`;
 
                         return (
                             <Fragment key={pkgId || index}>
                                 <div className="tooltip-row-label">
-                                    <span
-                                        className="stat-label"
-                                        style={{ color: entry.color }}
-                                    >
+                                    <span className="stat-label" style={{ color: entry.color }}>
                                         {entry.name + ':'}
                                     </span>
                                 </div>
                                 <div className="tooltip-row-value">
-                                    <span className="stat-value" style={{ color: primaryColor }}>{primaryValue}</span>
+                                    <span
+                                        className={viewMode === ViewMode.absolute
+                                            ? 'stat-value'
+                                            : 'stat-label secondary-value'}
+                                        style={{
+                                            color: '#f8fafc',
+                                            fontWeight: viewMode === ViewMode.absolute ? 'bold' : 'normal',
+                                        }}
+                                    >
+                                        {formattedAbs}
+                                    </span>
                                 </div>
                                 <div className="tooltip-row-value">
-                                    <span className="stat-label secondary-value" style={{ color: secondaryColor }}>
-                                        {secondaryValue}
+                                    <span
+                                        className={viewMode === ViewMode.absoluteChange
+                                            ? 'stat-value'
+                                            : 'stat-label secondary-value'}
+                                        style={{
+                                            color: diffColor,
+                                            fontWeight: viewMode === ViewMode.absoluteChange ? 'bold' : 'normal',
+                                        }}
+                                    >
+                                        {formattedDiff}
+                                    </span>
+                                </div>
+                                <div className="tooltip-row-value">
+                                    <span
+                                        className={viewMode === ViewMode.percent
+                                            ? 'stat-value'
+                                            : 'stat-label secondary-value'}
+                                        style={{
+                                            color: pctColor,
+                                            fontWeight: viewMode === ViewMode.percent ? 'bold' : 'normal',
+                                        }}
+                                    >
+                                        {formattedPct}
                                     </span>
                                 </div>
                             </Fragment>
