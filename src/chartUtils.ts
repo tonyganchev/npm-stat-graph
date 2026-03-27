@@ -8,7 +8,7 @@
 
 import { format, parseISO, startOfMonth, startOfWeek, startOfYear } from 'date-fns';
 
-import { ChartDataPoint, CombinedData, GroupBy, PackageConfig } from './types';
+import { ChartDataPoint, CombinedData, GroupBy, PackageConfig, PeriodMetrics } from './types';
 import { isoDateFormat } from './utils';
 
 const formatMdy = 'MMM d, yyyy' as const;
@@ -52,7 +52,8 @@ export function groupChartData(
                     {
                         downloads: items.reduce((sum, item) => sum + (item.packages[p.name] || 0), 0),
                         rateChangePercent: 0,
-                    },
+                        absoluteChange: 0,
+                    } as PeriodMetrics,
                 ])),
                 absMax: 0,
                 displayMax: 0,
