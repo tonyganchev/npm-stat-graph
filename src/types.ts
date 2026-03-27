@@ -44,6 +44,12 @@ export enum ViewMode {
     absoluteChange = 'absolute-change',
 }
 
+export const viewModeMetrics: Record<ViewMode, keyof PeriodMetrics> = {
+    [ViewMode.absolute]: 'downloads',
+    [ViewMode.absoluteChange]: 'absoluteChange',
+    [ViewMode.percent]: 'rateChangePercent',
+} as const;
+
 export enum ChartType {
     line = 'line',
     bar = 'bar',

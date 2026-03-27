@@ -12,7 +12,7 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import { groupChartData } from '../chartUtils';
 import { ChartDataPoint, ChartType, CombinedData, GroupBy, PackageConfig, ViewMode } from '../types';
-import { packageColors } from '../utils';
+import { formatCompact, numberFormatChange, numberFormatChangePercent, packageColors } from '../utils';
 import { BarChartView } from './BarChartView';
 import { LineChartView } from './LineChartView';
 
@@ -54,9 +54,9 @@ const statChart = memo(({
                     const prevAbs = prev.pkgStats[p.name]?.downloads || 0;
                     diff = abs - prevAbs;
                     if (prevAbs === 0) {
-                        pct = abs > 0 ? 100 : 0;
+                        pct = abs > 0 ? 1 : 0;
                     } else {
-                        pct = ((abs - prevAbs) / prevAbs) * 100;
+                        pct = (abs - prevAbs) / prevAbs;
                     }
                 }
 
@@ -78,8 +78,9 @@ const statChart = memo(({
                 vals = relevantStats.map((s) => s?.downloads || 0);
             }
 
-            newItem.absMax = Math.max(...vals.map((v) => Math.abs(v)), 1);
-            newItem.displayMax = Math.max(...vals, 1);
+            const minThreshold = viewMode === ViewMode.percent ? 0.01 : 1;
+            newItem.absMax = Math.max(...vals.map((v) => Math.abs(v)), minThreshold);
+            newItem.displayMax = Math.max(...vals, minThreshold);
             newItem.displayMin = Math.min(...vals, 0);
 
             return newItem;
@@ -137,12 +138,7 @@ const statChart = memo(({
         return distance >= 4 || chartData.length < 200;
     }, [chartWidth, chartData.length]);
 
-    const formatNumber = (num: number) => {
-        const abs = Math.abs(num);
-        if (abs >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-        if (abs >= 1000) return `${(num / 1000).toFixed(0)}k`;
-        return num.toFixed(0);
-    };
+    // Removed local formatNumber in favor of formatCompact from utils.ts
 
     if (!chartData || chartData.length === 0 || visiblePackages.length === 0) {
         return (
@@ -191,15 +187,17 @@ const statChart = memo(({
                                 ? (val > 0 ? '#10b981' : val < 0 ? '#ef4444' : 'var(--text-secondary)')
                                 : 'inherit';
 
+                            const formattedValue = viewMode === ViewMode.percent
+                                ? `${numberFormatChangePercent.format(val)} avg`
+                                : viewMode === ViewMode.absoluteChange
+                                    ? `${numberFormatChange.format(Math.round(val))} avg`
+                                    : formatCompact(val);
+
                             return (
                                 <div className="stat-summary" key={i}>
                                     <span className="stat-label" style={{ color }}>{pkg.name}</span>
                                     <span className="stat-value" style={{ color: summaryColor }}>
-                                        {viewMode === ViewMode.percent
-                                            ? `${val > 0 ? '+' : ''}${val.toFixed(1)}% avg`
-                                            : viewMode === ViewMode.absoluteChange
-                                                ? `${val > 0 ? '+' : ''}${formatNumber(val)} avg`
-                                                : formatNumber(val)}
+                                        {formattedValue}
                                     </span>
                                 </div>
                             );

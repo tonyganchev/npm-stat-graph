@@ -8,8 +8,13 @@
 
 import { FC, Fragment } from 'react';
 
-import { ChartDataPoint, PackageConfig, ViewMode } from '../types';
-import { packageColors } from '../utils';
+import { ChartDataPoint, PackageConfig, ViewMode, viewModeMetrics } from '../types';
+import {
+    numberFormatBasic,
+    numberFormatChange,
+    numberFormatChangePercent,
+    packageColors,
+} from '../utils';
 
 interface TooltipPayloadItem {
     dataKey?: string | number;
@@ -30,7 +35,23 @@ interface ChartTooltipProps {
     viewMode: ViewMode;
 }
 
-const formatNumber = (num: number) => new Intl.NumberFormat('en-US').format(num);
+const formatNumber = (num: number) => numberFormatBasic.format(num);
+const formatNumberChange = (num: number) => numberFormatChange.format(num);
+const formatNumberChangePercent = (num: number) => numberFormatChangePercent.format(num);
+
+const colorPositive = '#10b981';
+const colorNegative = '#ff5252';
+const colorZero = '#94a3b8';
+
+function colorPosNeg(value: number) {
+    if (value > 0) {
+        return colorPositive;
+    } else if (value < 0) {
+        return colorNegative;
+    } else {
+        return colorZero;
+    }
+}
 
 export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePackages, packages, viewMode }) => {
     if (active && payload && payload.length) {
@@ -43,11 +64,7 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                 absoluteChange: 0,
             };
 
-            const value = viewMode === ViewMode.percent
-                ? stats.rateChangePercent
-                : viewMode === ViewMode.absoluteChange
-                    ? stats.absoluteChange
-                    : stats.downloads;
+            const value = stats[viewModeMetrics[viewMode]];
 
             return {
                 dataKey: pkg.name,
@@ -56,34 +73,32 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                 payload: dataPoint,
                 color: packageColors[packages.findIndex((p) => p.name === pkg.name) % packageColors.length],
             };
-        });
-
-        const sortedItems = [...displayItems].sort((a, b) => (b.value || 0) - (a.value || 0));
+        }).sort((a, b) => (b.value || 0) - (a.value || 0));
 
         return (
             <div className="custom-tooltip">
                 <p className="stat-label custom-tooltip-label">{dataPoint.formattedDate}</p>
                 <div className="tooltip-grid">
                     <div />
-                    <div className="stat-label secondary-value" style={{ textAlign: 'right' }}>Total</div>
-                    <div className="stat-label secondary-value" style={{ textAlign: 'right' }}>Net</div>
-                    <div className="stat-label secondary-value" style={{ textAlign: 'right' }}>%</div>
+                    <div className="stat-label secondary-value">Total</div>
+                    <div className="stat-label secondary-value">Net</div>
+                    <div className="stat-label secondary-value">%</div>
 
-                    {sortedItems.map((entry: TooltipPayloadItem, index: number) => {
+                    {displayItems.map((entry: TooltipPayloadItem, index: number) => {
                         const pkgId = entry.dataKey as string;
                         const stats = entry.payload.pkgStats?.[pkgId] || {
                             downloads: 0,
                             rateChangePercent: 0,
                             absoluteChange: 0,
                         };
-                        const { downloads: abs, rateChangePercent: pct, absoluteChange: diff } = stats;
+                        const { downloads, rateChangePercent, absoluteChange } = stats;
 
-                        const diffColor = diff > 0 ? '#10b981' : diff < 0 ? '#ff5252' : '#94a3b8';
-                        const pctColor = pct > 0 ? '#10b981' : pct < 0 ? '#ff5252' : '#94a3b8';
+                        const diffColor = colorPosNeg(absoluteChange);
+                        const pctColor = colorPosNeg(rateChangePercent);
 
-                        const formattedAbs = formatNumber(abs);
-                        const formattedPct = `${pct > 0 ? '+' : ''}${pct.toFixed(1)}%`;
-                        const formattedDiff = `${diff > 0 ? '+' : ''}${formatNumber(diff)}`;
+                        const formattedAbs = formatNumber(downloads);
+                        const formattedDiff = formatNumberChange(absoluteChange);
+                        const formattedPct = formatNumberChangePercent(rateChangePercent);
 
                         return (
                             <Fragment key={pkgId || index}>

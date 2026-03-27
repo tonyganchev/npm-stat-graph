@@ -18,8 +18,8 @@ import {
     YAxis,
 } from 'recharts';
 
-import { ChartDataPoint, PackageConfig, PeriodMetrics, ViewMode } from '../types';
-import { packageColors } from '../utils';
+import { ChartDataPoint, PackageConfig, ViewMode, viewModeMetrics } from '../types';
+import { formatCompact, numberFormatChangePercent, packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 
 interface BarChartViewProps {
@@ -39,8 +39,12 @@ export const BarChartView: FC<BarChartViewProps> = ({
     chartWidth,
     height,
 }) => {
-    const globalMin = Math.min(...chartData.map((d) => typeof d.displayMin === 'number' ? d.displayMin : 0), 0);
-    const globalMax = Math.max(...chartData.map((d) => typeof d.displayMax === 'number' ? d.displayMax : 0), 1);
+    const minThreshold = viewMode === ViewMode.percent ? 0.01 : 1;
+    const globalMin = Math.min(...chartData.map((d) => (typeof d.displayMin === 'number' ? d.displayMin : 0)), 0);
+    const globalMax = Math.max(
+        ...chartData.map((d) => (typeof d.displayMax === 'number' ? d.displayMax : 0)),
+        minThreshold,
+    );
 
     return (
         <BarChart
@@ -148,15 +152,10 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
                 tickFormatter={(value) => {
-                    if (viewMode === ViewMode.percent) return `${value.toFixed(0)}%`;
-                    const abs = Math.abs(value);
-                    if (abs >= 1000000) {
-                        return `${(value / 1000000).toFixed(1)}M`;
+                    if (viewMode === ViewMode.percent) {
+                        return numberFormatChangePercent.format(value);
                     }
-                    if (abs >= 1000) {
-                        return `${(value / 1000).toFixed(0)}k`;
-                    }
-                    return value.toFixed(0);
+                    return formatCompact(value);
                 }}
                 width={60}
             />
@@ -182,13 +181,8 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 const originalIndex = packages.findIndex((p) => p.name === pkg.name);
                 const color = packageColors[originalIndex % packageColors.length];
 
-                const metricToUse: Record<ViewMode, keyof PeriodMetrics> = {
-                    [ViewMode.absolute]: 'downloads',
-                    [ViewMode.absoluteChange]: 'absoluteChange',
-                    [ViewMode.percent]: 'rateChangePercent',
-                };
                 const values = chartData
-                    .map((d) => d.pkgStats[pkg.name]?.[metricToUse[viewMode]])
+                    .map((d) => d.pkgStats[pkg.name]?.[viewModeMetrics[viewMode]])
                     .filter((v): v is number => typeof v === 'number');
 
                 const minVal = values.length > 0 ? Math.min(...values) : null;

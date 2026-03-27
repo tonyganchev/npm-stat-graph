@@ -31,3 +31,23 @@ export const daysOfWeek = [
     { label: 'Sat', value: 6 },
     { label: 'Sun', value: 0 },
 ];
+
+export const numberFormatBasic = new Intl.NumberFormat('en-US');
+export const numberFormatChange = new Intl.NumberFormat('en-US', { signDisplay: 'exceptZero' });
+export const numberFormatChangePercent = new Intl.NumberFormat('en-US', {
+    signDisplay: 'exceptZero',
+    style: 'percent',
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1,
+});
+
+export const formatCompact = (num: number) => {
+    const abs = Math.abs(num);
+    if (abs >= 1000000) {
+        return `${(num / 1000000).toFixed(1)}M`;
+    }
+    if (abs >= 1000) {
+        return `${(num / 1000).toFixed(0)}k`;
+    }
+    return num.toFixed(0);
+};

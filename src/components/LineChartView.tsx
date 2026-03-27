@@ -19,7 +19,7 @@ import {
 } from 'recharts';
 
 import { ChartDataPoint, PackageConfig, ViewMode } from '../types';
-import { packageColors } from '../utils';
+import { formatCompact, numberFormatChangePercent, packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 
 interface LineChartViewProps {
@@ -59,11 +59,10 @@ export const LineChartView: FC<LineChartViewProps> = ({
     }), [chartData, visiblePackages, viewMode, packageKeys]);
 
     const formatValue = (value: number) => {
-        if (viewMode === ViewMode.percent) return `${value.toFixed(0)}%`;
-        const abs = Math.abs(value);
-        if (abs >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
-        if (abs >= 1000) return `${(value / 1000).toFixed(0)}k`;
-        return value.toFixed(0);
+        if (viewMode === ViewMode.percent) {
+            return numberFormatChangePercent.format(value);
+        }
+        return formatCompact(value);
     };
 
     return (
