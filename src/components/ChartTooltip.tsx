@@ -112,10 +112,7 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                                         className={viewMode === ViewMode.absolute
                                             ? 'stat-value'
                                             : 'stat-label secondary-value'}
-                                        style={{
-                                            color: '#f8fafc',
-                                            fontWeight: viewMode === ViewMode.absolute ? 'bold' : 'normal',
-                                        }}
+                                        style={{ fontWeight: viewMode === ViewMode.absolute ? 'bold' : 'normal' }}
                                     >
                                         {formattedAbs}
                                     </span>

@@ -8,6 +8,7 @@
 
 import { ArrowUpDown, Eye, EyeOff, Plus, X } from 'lucide-react';
 import { CSSProperties, FC, useState } from 'react';
+import { SiNpm } from 'react-icons/si';
 
 import { PackageConfig } from '../types';
 import { packageColors } from '../utils';
@@ -82,11 +83,21 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
                         } as CSSProperties}
                     />
 
+                    <a
+                        href={pkg.name ? `https://www.npmjs.com/package/${pkg.name}` : undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-icon"
+                        title="View on npmjs.org"
+                    >
+                        <SiNpm size={20} />
+                    </a>
+
                     <button
                         type="button"
                         className="btn-icon"
                         onClick={() => toggleVisibility(i)}
-                        title="Toggle Visibility"
+                        title={pkg.visible ? 'Hide Package' : 'Show Package'}
                     >
                         {pkg.visible ? <Eye size={20} /> : <EyeOff size={20} />}
                     </button>
