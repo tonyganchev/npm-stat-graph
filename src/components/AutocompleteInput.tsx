@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { CSSProperties, useEffect, useRef, useState } from 'react';
+import { CSSProperties, FC, useEffect, useRef, useState } from 'react';
 
 interface AutocompleteInputProps {
     value: string;
@@ -17,7 +17,7 @@ interface AutocompleteInputProps {
     style?: CSSProperties;
 }
 
-export const AutocompleteInput: React.FC<AutocompleteInputProps> =
+export const AutocompleteInput: FC<AutocompleteInputProps> =
     ({ value, onChange, onBlur, placeholder, disabled, style }) => {
         const [suggestions, setSuggestions] = useState<string[]>([]);
         const [showSuggestions, setShowSuggestions] = useState(false);
