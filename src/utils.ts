@@ -45,6 +45,11 @@ export const numberFormatBasicPercent = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 1,
     minimumFractionDigits: 1,
 });
+export const numberFormatRatio = new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1,
+});
 
 export const formatCompact = (num: number) => {
     const abs = Math.abs(num);

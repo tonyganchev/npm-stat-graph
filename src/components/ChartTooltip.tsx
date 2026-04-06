@@ -14,6 +14,7 @@ import {
     numberFormatBasicPercent,
     numberFormatChange,
     numberFormatChangePercent,
+    numberFormatRatio,
     packageColors,
 } from '../utils';
 
@@ -39,7 +40,15 @@ interface ChartTooltipProps {
 const formatNumber = (num: number) => numberFormatBasic.format(num);
 const formatNumberChange = (num: number) => numberFormatChange.format(num);
 const formatNumberChangePercent = (num: number) => numberFormatChangePercent.format(num);
-const formatNumberRelative = (num: number) => numberFormatBasicPercent.format(num);
+const formatNumberRelative = (num: number) => {
+    if (num > 1) {
+        return `${numberFormatRatio.format(num)}x`;
+    } else if (num === 1) {
+        return 'baseline';
+    } else {
+        return numberFormatBasicPercent.format(num);
+    }
+};
 
 const colorPositive = '#10b981';
 const colorNegative = '#ff5252';
@@ -61,7 +70,7 @@ function colorRelative(value: number) {
     } else if (value < 1) {
         return colorPositive; // Green for under 100%
     } else {
-        return colorZero;
+        return 'inherit';
     }
 }
 

@@ -19,7 +19,7 @@ import {
 } from 'recharts';
 
 import { ChartDataPoint, PackageConfig, ViewMode, viewModeMetrics } from '../types';
-import { formatCompact, numberFormatChangePercent, packageColors } from '../utils';
+import { formatCompact, numberFormatChangePercent, numberFormatRatio, packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 
 interface BarChartViewProps {
@@ -152,7 +152,10 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
                 tickFormatter={(value) => {
-                    if (viewMode === ViewMode.percent || viewMode === ViewMode.relative) {
+                    if (viewMode === ViewMode.relative) {
+                        return `${numberFormatRatio.format(value)}x`;
+                    }
+                    if (viewMode === ViewMode.percent) {
                         return numberFormatChangePercent.format(value);
                     }
                     return formatCompact(value);

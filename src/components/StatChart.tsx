@@ -17,6 +17,7 @@ import {
     numberFormatBasicPercent,
     numberFormatChange,
     numberFormatChangePercent,
+    numberFormatRatio,
     packageColors,
 } from '../utils';
 import { BarChartView } from './BarChartView';
@@ -203,13 +204,17 @@ const statChart = memo(({
                             const isRelative = viewMode === ViewMode.relative;
 
                             const summaryColor = isRelative
-                                ? (val > 1 ? '#ef4444' : val < 1 ? '#10b981' : 'var(--text-secondary)')
+                                ? (val > 1 ? '#ef4444' : val < 1 ? '#10b981' : 'inherit')
                                 : isChange
                                     ? (val > 0 ? '#10b981' : val < 0 ? '#ef4444' : 'var(--text-secondary)')
                                     : 'inherit';
 
                             const formattedValue = isRelative
-                                ? `${numberFormatBasicPercent.format(val)} avg`
+                                ? (val > 1
+                                        ? `${numberFormatRatio.format(val)}x`
+                                        : val === 1
+                                            ? 'baseline'
+                                            : numberFormatBasicPercent.format(val)) + ' avg'
                                 : viewMode === ViewMode.percent
                                     ? `${numberFormatChangePercent.format(val)} avg`
                                     : viewMode === ViewMode.absoluteChange
