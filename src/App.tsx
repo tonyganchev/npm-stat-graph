@@ -98,12 +98,11 @@ function App() {
     const deferredVisiblePackages = useDeferredValue(visiblePackages);
 
     return (
-        <div className="app-container">
+        <>
             <header>
                 <h1>
                     <img
                         src={`${import.meta.env.BASE_URL}favicon.svg`}
-                        className="header-icon"
                         alt="Logo"
                         width={40}
                         height={40}
@@ -112,7 +111,7 @@ function App() {
                 </h1>
             </header>
 
-            <main className="main-content">
+            <main>
                 <SearchControls
                     packages={packages}
                     setPackages={(pkgs) => updateSync({ packages: pkgs })}
@@ -217,15 +216,14 @@ function App() {
                     </div>
                 )}
             </main>
-            <footer className="app-footer">
-                <div className="footer-content">
+            <footer>
+                <div>
                     <p>
                         &copy; 2026 Tony Ganchev. Licensed under the MIT License.
                         <a
                             href="https://github.com/tonyganchev/npm-stat-graph"
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="github-link"
                             title="GitHub Repository"
                         >
                             <GitHubIcon />
@@ -235,7 +233,7 @@ function App() {
                     </p>
                 </div>
             </footer>
-        </div>
+        </>
     );
 }
 

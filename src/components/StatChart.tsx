@@ -192,22 +192,22 @@ const statChart = memo(({
                 </div>
                 <div className="chart-summary-group">
                     {[...visiblePackages]
-                        .sort((a, b) => {
-                            if (viewMode !== ViewMode.relative) return 0;
-                            return (packageSortValues[b.name] || 0) - (packageSortValues[a.name] || 0);
-                        })
+                        .sort((a, b) => (packageSortValues[b.name] || 0) - (packageSortValues[a.name] || 0))
                         .map((pkg, i) => {
                             const originalIndex = packages.findIndex((p) => p.name === pkg.name);
-                            const color = packageColors[originalIndex % packageColors.length];
+                            const pkgClass = `pkg-${originalIndex % packageColors.length}`;
                             const val = packageSortValues[pkg.name] || 0;
                             const isChange = viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange;
                             const isRelative = viewMode === ViewMode.relative;
 
-                            const summaryColor = isRelative
-                                ? (val > 1 ? '#ef4444' : val < 1 ? '#10b981' : 'inherit')
-                                : isChange
-                                    ? (val > 0 ? '#10b981' : val < 0 ? '#ef4444' : 'var(--text-secondary)')
-                                    : 'inherit';
+                            let statusClass = '';
+                            if (isRelative) {
+                                statusClass = val > 1 ? 'undesirable-value' : val < 1 ? 'desirable-value' : '';
+                            } else if (isChange) {
+                                statusClass = val > 0
+                                    ? 'desirable-value'
+                                    : val < 0 ? 'undesirable-value' : 'baseline-value';
+                            }
 
                             const formattedValue = isRelative
                                 ? (val > 1
@@ -223,8 +223,8 @@ const statChart = memo(({
 
                             return (
                                 <div className="stat-summary" key={i}>
-                                    <span className="stat-label" style={{ color }}>{pkg.name}</span>
-                                    <span className="stat-value" style={{ color: summaryColor }}>
+                                    <span className={`stat-label ${pkgClass}`}>{pkg.name}</span>
+                                    <span className={`stat-value ${statusClass}`}>
                                         {formattedValue}
                                     </span>
                                 </div>

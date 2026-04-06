@@ -8,12 +8,18 @@
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --accent-color: #0ea5e9;
-  --success-color: #10b981;
+  --desirable-value-color: #10b981;
+  --undesirable-value-color: #ef4444;
   --error-color: #f79999;
-  --pkg1-color: #3b82f6;
-  --pkg2-color: #0ea5e9;
+  --pkg1-color: #60a5fa;
+  --pkg2-color: #f472b6;
+  --pkg3-color: #4ade80;
+  --pkg4-color: #f59e0b;
+  --pkg5-color: #a78bfa;
+  --pkg6-color: #f87171;
+  --pkg7-color: #2dd4bf;
+  --pkg8-color: #fb923c;
   --input-bg: rgba(15, 23, 42, 0.6);
-  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
   --accent-gradient: linear-gradient(135deg, #3b82f6 0%, #0ea5e9 100%);
   --font-family: Tahoma, Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
@@ -38,12 +44,16 @@ body {
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  padding: 2rem;
 }
 
 #root {
   flex: 1;
   display: flex;
   flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  margin: 0 auto;
 }
 
 /* Typography */
@@ -61,16 +71,7 @@ svg {
   shape-rendering: geometricPrecision;
 }
 
-/* Layout */
-.app-container {
-  margin: 0 auto;
-  padding: 2rem;
-  width: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-}
+
 
 header {
   animation: fadeInDown 0.6s ease-out;
@@ -85,12 +86,12 @@ header h1 {
   gap: 0.75rem;
 }
 
-.header-icon {
+header h1 img {
   display: inline;
   vertical-align: bottom;
 }
 
-.main-content {
+main {
   display: flex;
   flex-direction: column;
   gap: 2rem;
@@ -140,17 +141,6 @@ header h1 {
   opacity: 0.1;
 }
 
-.btn-primary {
-  background: var(--accent-gradient);
-  border-color: transparent;
-  font-weight: 400;
-  opacity: 1;
-}
-
-.btn-primary:hover::before {
-  opacity: 0.15;
-}
-
 .btn:active {
   transform: scale(0.98);
 }
@@ -160,7 +150,6 @@ header h1 {
   cursor: not-allowed;
   transform: none;
 }
-
 
 .btn-icon {
   background: transparent;
@@ -432,28 +421,21 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   font-weight: 400;
   opacity: 1;
   color: white;
-  border-color: transparent !important;
+  border-color: transparent;
 }
 
 .filter-chip svg {
   margin-right: .3rem;
 }
 
-.filter-hint {
-  margin: 0;
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  opacity: 0.8;
-}
 
 /* Chart Area */
 .chart-section {
-  flex: 1;
-  height: var(--chart-height);
-  min-height: var(--chart-height);
-  display: flex;
-  flex-direction: column;
   animation: fadeInUp 0.6s ease-out 0.4s both;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  margin-top: 2rem;
 }
 
 .chart-header {
@@ -462,7 +444,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   align-items: flex-start;
   margin-bottom: 1.5rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid var(--card-border);
   flex-wrap: wrap;
   gap: 1rem;
 }
@@ -491,7 +472,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   flex-direction: column;
   gap: 2rem;
 }
-
 
 .search-actions {
   display: flex;
@@ -631,23 +611,23 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 
 /* Tooltip Customization for Recharts */
 .custom-tooltip {
-  background: rgba(15, 23, 42, 0.9) !important;
-  border: 1px solid var(--card-border) !important;
-  border-radius: 0.25rem !important;
-  padding: 1rem !important;
-  box-shadow: var(--shadow-lg) !important;
-  backdrop-filter: blur(8px) !important;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid var(--card-border);
+  border-radius: 0.25rem;
+  padding: 1rem;
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(8px);
 }
 
 .custom-tooltip-label {
-  color: var(--text-secondary) !important;
-  margin-bottom: 0.5rem !important;
-  font-size: 0.875rem !important;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
 }
 
 .recharts-default-tooltip {
-  background-color: transparent !important;
-  border: none !important;
+  background-color: transparent;
+  border: none;
 }
 
 .tooltip-grid {
@@ -665,10 +645,6 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   white-space: nowrap;
 }
 
-.tooltip-dot {
-  display: none;
-}
-
 .custom-tooltip .stat-value {
   font-weight: 600;
 }
@@ -680,7 +656,7 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 .custom-tooltip .custom-tooltip-label {
-  color: var(--text-secondary) !important;
+  color: var(--text-secondary);
   opacity: 0.8;
 }
 
@@ -691,40 +667,40 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
 }
 
 /* Footer */
-.app-footer {
-  margin-top: auto;
+footer {
   padding: 1.5rem 2rem;
   border-top: 1px solid var(--card-border);
   text-align: center;
 }
 
-.footer-content {
+footer div {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 1rem;
 }
 
-.footer-content p {
+footer div p {
   font-size: 0.875rem;
   color: var(--text-secondary);
   letter-spacing: 0.05rem;
   margin: 0;
 }
 
-.github-link {
+a {
   color: var(--text-secondary);
   fill: var(--text-secondary);
   margin-left: 1rem;
   transition: all 0.2s ease;
 }
 
-.github-link:hover {
+a:hover {
+  opacity: 1;
   color: var(--text-primary);
   fill: var(--text-primary);
 }
 
-.github-link svg {
+footer a svg {
   vertical-align: text-bottom;
   margin-left: 0.25rem;
   margin-right: 0.25rem;
@@ -739,3 +715,16 @@ input[type="date"]::-webkit-calendar-picker-indicator:hover {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+.desirable-value { color: var(--desirable-value-color); }
+.undesirable-value { color: var(--undesirable-value-color); }
+.baseline-value { color: var(--text-primary); }
+
+.pkg-0 { color: var(--pkg1-color) }
+.pkg-1 { color: var(--pkg2-color) }
+.pkg-2 { color: var(--pkg3-color) }
+.pkg-3 { color: var(--pkg4-color) }
+.pkg-4 { color: var(--pkg5-color) }
+.pkg-5 { color: var(--pkg6-color) }
+.pkg-6 { color: var(--pkg7-color) }
+.pkg-7 { color: var(--pkg8-color) }

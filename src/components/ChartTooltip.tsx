@@ -15,7 +15,6 @@ import {
     numberFormatChange,
     numberFormatChangePercent,
     numberFormatRatio,
-    packageColors,
 } from '../utils';
 
 interface TooltipPayloadItem {
@@ -23,7 +22,7 @@ interface TooltipPayloadItem {
     name?: string;
     value?: number;
     payload: ChartDataPoint;
-    color?: string;
+    pkgClass?: string;
     stroke?: string;
     fill?: string;
 }
@@ -50,27 +49,23 @@ const formatNumberRelative = (num: number) => {
     }
 };
 
-const colorPositive = '#10b981';
-const colorNegative = '#ff5252';
-const colorZero = '#94a3b8';
-
-function colorPosNeg(value: number) {
+function classPosNeg(value: number) {
     if (value > 0) {
-        return colorPositive;
+        return 'desirable-value';
     } else if (value < 0) {
-        return colorNegative;
+        return 'undesirable-value';
     } else {
-        return colorZero;
+        return 'baseline-value';
     }
 }
 
-function colorRelative(value: number) {
+function classRelative(value: number) {
     if (value > 1) {
-        return colorNegative; // Red for over 100%
+        return 'undesirable-value'; // Red for over 100%
     } else if (value < 1) {
-        return colorPositive; // Green for under 100%
+        return 'desirable-value'; // Green for under 100%
     } else {
-        return 'inherit';
+        return 'baseline-value';
     }
 }
 
@@ -87,18 +82,16 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
             };
 
             const value = stats[viewModeMetrics[viewMode]];
+            const pkgIndex = packages.findIndex((p) => p.name === pkg.name);
 
             return {
                 dataKey: pkg.name,
                 name: pkg.name,
                 value,
                 payload: dataPoint,
-                color: packageColors[packages.findIndex((p) => p.name === pkg.name) % packageColors.length],
+                pkgClass: `pkg-${pkgIndex % 8}`,
             };
-        }).sort((a, b) => {
-            if (viewMode !== ViewMode.relative) return 0;
-            return (b.value || 0) - (a.value || 0);
-        });
+        }).sort((a, b) => (b.value || 0) - (a.value || 0));
 
         return (
             <div className="custom-tooltip">
@@ -120,9 +113,9 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                         };
                         const { downloads, rateChangePercent, absoluteChange, relativeToFirst } = stats;
 
-                        const diffColor = colorPosNeg(absoluteChange);
-                        const pctColor = colorPosNeg(rateChangePercent);
-                        const relColor = colorRelative(relativeToFirst);
+                        const diffClass = classPosNeg(absoluteChange);
+                        const pctClass = classPosNeg(rateChangePercent);
+                        const relClass = classRelative(relativeToFirst);
 
                         const formattedAbs = formatNumber(downloads);
                         const formattedDiff = formatNumberChange(absoluteChange);
@@ -132,7 +125,7 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                         return (
                             <Fragment key={pkgId || index}>
                                 <div className="tooltip-row-label">
-                                    <span className="stat-label" style={{ color: entry.color }}>
+                                    <span className={`stat-label ${entry.pkgClass}`}>
                                         {entry.name + ':'}
                                     </span>
                                 </div>
@@ -148,11 +141,10 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                                 </div>
                                 <div className="tooltip-row-value">
                                     <span
-                                        className={viewMode === ViewMode.absoluteChange
+                                        className={`${viewMode === ViewMode.absoluteChange
                                             ? 'stat-value'
-                                            : 'stat-label secondary-value'}
+                                            : 'stat-label secondary-value'} ${diffClass}`}
                                         style={{
-                                            color: diffColor,
                                             fontWeight: viewMode === ViewMode.absoluteChange ? 'bold' : 'normal',
                                         }}
                                     >
@@ -161,11 +153,10 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                                 </div>
                                 <div className="tooltip-row-value">
                                     <span
-                                        className={viewMode === ViewMode.percent
+                                        className={`${viewMode === ViewMode.percent
                                             ? 'stat-value'
-                                            : 'stat-label secondary-value'}
+                                            : 'stat-label secondary-value'} ${pctClass}`}
                                         style={{
-                                            color: pctColor,
                                             fontWeight: viewMode === ViewMode.percent ? 'bold' : 'normal',
                                         }}
                                     >
@@ -174,11 +165,10 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                                 </div>
                                 <div className="tooltip-row-value">
                                     <span
-                                        className={viewMode === ViewMode.relative
+                                        className={`${viewMode === ViewMode.relative
                                             ? 'stat-value'
-                                            : 'stat-label secondary-value'}
+                                            : 'stat-label secondary-value'} ${relClass}`}
                                         style={{
-                                            color: relColor,
                                             fontWeight: viewMode === ViewMode.relative ? 'bold' : 'normal',
                                         }}
                                     >
