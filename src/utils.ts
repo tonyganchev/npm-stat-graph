@@ -12,8 +12,8 @@ export const isoDateFormat = 'yyyy-MM-dd';
 export const minDate = new Date(2010, 0, 12); // Jan 12, 2010
 
 export const packageColors = [
-    '#f472b6', // Pink
     '#60a5fa', // Blue
+    '#f472b6', // Pink
     '#4ade80', // Green
     '#f59e0b', // Yellow
     '#a78bfa', // Purple
