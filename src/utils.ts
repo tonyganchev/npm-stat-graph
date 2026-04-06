@@ -40,6 +40,11 @@ export const numberFormatChangePercent = new Intl.NumberFormat('en-US', {
     maximumFractionDigits: 1,
     minimumFractionDigits: 1,
 });
+export const numberFormatBasicPercent = new Intl.NumberFormat('en-US', {
+    style: 'percent',
+    maximumFractionDigits: 1,
+    minimumFractionDigits: 1,
+});
 
 export const formatCompact = (num: number) => {
     const abs = Math.abs(num);

@@ -12,7 +12,13 @@ import { memo, useEffect, useMemo, useRef, useState } from 'react';
 
 import { groupChartData } from '../chartUtils';
 import { ChartDataPoint, ChartType, CombinedData, GroupBy, PackageConfig, ViewMode } from '../types';
-import { formatCompact, numberFormatChange, numberFormatChangePercent, packageColors } from '../utils';
+import {
+    formatCompact,
+    numberFormatBasicPercent,
+    numberFormatChange,
+    numberFormatChangePercent,
+    packageColors,
+} from '../utils';
 import { BarChartView } from './BarChartView';
 import { LineChartView } from './LineChartView';
 
@@ -46,6 +52,9 @@ const statChart = memo(({
             const newItem = { ...item, pkgStats: { ...item.pkgStats } };
             const prev = index > 0 ? self[index - 1] : null;
 
+            const firstVisiblePkg = visiblePackages[0];
+            const firstAbs = firstVisiblePkg ? (item.pkgStats[firstVisiblePkg.name]?.downloads || 0) : 0;
+
             packages.forEach((p) => {
                 const abs = item.pkgStats[p.name]?.downloads || 0;
                 let pct = 0;
@@ -64,6 +73,7 @@ const statChart = memo(({
                     downloads: abs,
                     rateChangePercent: pct,
                     absoluteChange: diff,
+                    relativeToFirst: firstAbs === 0 ? (abs > 0 ? 1 : 0) : abs / firstAbs,
                 };
             });
 
@@ -74,11 +84,13 @@ const statChart = memo(({
                 vals = relevantStats.map((s) => s?.rateChangePercent || 0);
             } else if (viewMode === ViewMode.absoluteChange) {
                 vals = relevantStats.map((s) => s?.absoluteChange || 0);
+            } else if (viewMode === ViewMode.relative) {
+                vals = relevantStats.map((s) => s?.relativeToFirst || 0);
             } else {
                 vals = relevantStats.map((s) => s?.downloads || 0);
             }
 
-            const minThreshold = viewMode === ViewMode.percent ? 0.01 : 1;
+            const minThreshold = (viewMode === ViewMode.percent || viewMode === ViewMode.relative) ? 0.01 : 1;
             newItem.absMax = Math.max(...vals.map((v) => Math.abs(v)), minThreshold);
             newItem.displayMax = Math.max(...vals, minThreshold);
             newItem.displayMin = Math.min(...vals, 0);
@@ -99,13 +111,15 @@ const statChart = memo(({
                     values[p.name] += stats?.rateChangePercent || 0;
                 } else if (viewMode === ViewMode.absoluteChange) {
                     values[p.name] += stats?.absoluteChange || 0;
+                } else if (viewMode === ViewMode.relative) {
+                    values[p.name] += stats?.relativeToFirst || 0;
                 } else {
                     values[p.name] += stats?.downloads || 0;
                 }
             });
         });
 
-        if (viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange) {
+        if (viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange || viewMode === ViewMode.relative) {
             packages.forEach((p) => {
                 values[p.name] = values[p.name] / count;
             });
@@ -162,6 +176,7 @@ const statChart = memo(({
         [ViewMode.absolute]: 'Downloads',
         [ViewMode.percent]: 'Change',
         [ViewMode.absoluteChange]: 'Net Change',
+        [ViewMode.relative]: 'Relative Support',
     } as const;
 
     return (
@@ -175,23 +190,31 @@ const statChart = memo(({
                     </span>
                 </div>
                 <div className="chart-summary-group">
-                    {visiblePackages
-                        .sort((a, b) => (packageSortValues[b.name] || 0) - (packageSortValues[a.name] || 0))
+                    {[...visiblePackages]
+                        .sort((a, b) => {
+                            if (viewMode !== ViewMode.relative) return 0;
+                            return (packageSortValues[b.name] || 0) - (packageSortValues[a.name] || 0);
+                        })
                         .map((pkg, i) => {
                             const originalIndex = packages.findIndex((p) => p.name === pkg.name);
                             const color = packageColors[originalIndex % packageColors.length];
                             const val = packageSortValues[pkg.name] || 0;
                             const isChange = viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange;
+                            const isRelative = viewMode === ViewMode.relative;
 
-                            const summaryColor = isChange
-                                ? (val > 0 ? '#10b981' : val < 0 ? '#ef4444' : 'var(--text-secondary)')
-                                : 'inherit';
+                            const summaryColor = isRelative
+                                ? (val > 1 ? '#ef4444' : val < 1 ? '#10b981' : 'var(--text-secondary)')
+                                : isChange
+                                    ? (val > 0 ? '#10b981' : val < 0 ? '#ef4444' : 'var(--text-secondary)')
+                                    : 'inherit';
 
-                            const formattedValue = viewMode === ViewMode.percent
-                                ? `${numberFormatChangePercent.format(val)} avg`
-                                : viewMode === ViewMode.absoluteChange
-                                    ? `${numberFormatChange.format(Math.round(val))} avg`
-                                    : formatCompact(val);
+                            const formattedValue = isRelative
+                                ? `${numberFormatBasicPercent.format(val)} avg`
+                                : viewMode === ViewMode.percent
+                                    ? `${numberFormatChangePercent.format(val)} avg`
+                                    : viewMode === ViewMode.absoluteChange
+                                        ? `${numberFormatChange.format(Math.round(val))} avg`
+                                        : formatCompact(val);
 
                             return (
                                 <div className="stat-summary" key={i}>

@@ -6,7 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { BarChart3, Diff, Percent } from 'lucide-react';
+import { BarChart3, Diff, Percent, Scaling } from 'lucide-react';
 import { FC } from 'react';
 
 import { ViewMode } from '../types';
@@ -40,7 +40,15 @@ export const ViewModeToggle: FC<ViewModeToggleProps> = ({ viewMode, setViewMode 
             title="Percentage Change"
         >
             <Percent size={14} />
-            <span>Percent</span>
+            <span>Rate %</span>
+        </button>
+        <button
+            onClick={() => setViewMode(ViewMode.relative)}
+            className={`filter-chip ${viewMode === ViewMode.relative ? 'active' : ''}`}
+            title="Relative to First Package"
+        >
+            <Scaling size={16} />
+            <span>Relative</span>
         </button>
     </div>
 );

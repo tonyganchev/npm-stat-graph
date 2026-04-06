@@ -24,6 +24,7 @@ export interface PeriodMetrics {
     downloads: number;
     rateChangePercent: number;
     absoluteChange: number;
+    relativeToFirst: number;
 }
 
 export interface ChartDataPoint {
@@ -42,12 +43,14 @@ export enum ViewMode {
     absolute = 'absolute',
     percent = 'percent',
     absoluteChange = 'absolute-change',
+    relative = 'relative',
 }
 
 export const viewModeMetrics: Record<ViewMode, keyof PeriodMetrics> = {
     [ViewMode.absolute]: 'downloads',
     [ViewMode.absoluteChange]: 'absoluteChange',
     [ViewMode.percent]: 'rateChangePercent',
+    [ViewMode.relative]: 'relativeToFirst',
 } as const;
 
 export enum ChartType {

@@ -39,7 +39,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
     chartWidth,
     height,
 }) => {
-    const minThreshold = viewMode === ViewMode.percent ? 0.01 : 1;
+    const minThreshold = (viewMode === ViewMode.percent || viewMode === ViewMode.relative) ? 0.01 : 1;
     const globalMin = Math.min(...chartData.map((d) => (typeof d.displayMin === 'number' ? d.displayMin : 0)), 0);
     const globalMax = Math.max(
         ...chartData.map((d) => (typeof d.displayMax === 'number' ? d.displayMax : 0)),
@@ -152,7 +152,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
                 stroke="var(--text-secondary)"
                 tick={{ fill: 'var(--text-secondary)', fontSize: 12 }}
                 tickFormatter={(value) => {
-                    if (viewMode === ViewMode.percent) {
+                    if (viewMode === ViewMode.percent || viewMode === ViewMode.relative) {
                         return numberFormatChangePercent.format(value);
                     }
                     return formatCompact(value);
@@ -225,6 +225,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
                             downloads: number;
                             rateChangePercent: number;
                             absoluteChange: number;
+                            relativeToFirst: number;
                         }>;
                         absMax?: number;
                     };
@@ -241,11 +242,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
                         <g>
                             {visiblePackages.map((pkg) => {
                                 const stats = pkgStats[pkg.name];
-                                const val = viewMode === ViewMode.percent
-                                    ? stats?.rateChangePercent || 0
-                                    : viewMode === ViewMode.absoluteChange
-                                        ? stats?.absoluteChange || 0
-                                        : stats?.downloads || 0;
+                                const val = stats?.[viewModeMetrics[viewMode]] || 0;
 
                                 const h = !absMax ? 0 : (Math.abs(val) / absMax) * maxHeight;
                                 const y = val >= 0 ? y0 - h : y0;

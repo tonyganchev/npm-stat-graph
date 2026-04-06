@@ -11,6 +11,7 @@ import { FC, Fragment } from 'react';
 import { ChartDataPoint, PackageConfig, ViewMode, viewModeMetrics } from '../types';
 import {
     numberFormatBasic,
+    numberFormatBasicPercent,
     numberFormatChange,
     numberFormatChangePercent,
     packageColors,
@@ -38,6 +39,7 @@ interface ChartTooltipProps {
 const formatNumber = (num: number) => numberFormatBasic.format(num);
 const formatNumberChange = (num: number) => numberFormatChange.format(num);
 const formatNumberChangePercent = (num: number) => numberFormatChangePercent.format(num);
+const formatNumberRelative = (num: number) => numberFormatBasicPercent.format(num);
 
 const colorPositive = '#10b981';
 const colorNegative = '#ff5252';
@@ -53,6 +55,16 @@ function colorPosNeg(value: number) {
     }
 }
 
+function colorRelative(value: number) {
+    if (value > 1) {
+        return colorNegative; // Red for over 100%
+    } else if (value < 1) {
+        return colorPositive; // Green for under 100%
+    } else {
+        return colorZero;
+    }
+}
+
 export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePackages, packages, viewMode }) => {
     if (active && payload && payload.length) {
         const dataPoint = payload[0].payload;
@@ -62,6 +74,7 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                 downloads: 0,
                 rateChangePercent: 0,
                 absoluteChange: 0,
+                relativeToFirst: 0,
             };
 
             const value = stats[viewModeMetrics[viewMode]];
@@ -73,7 +86,10 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                 payload: dataPoint,
                 color: packageColors[packages.findIndex((p) => p.name === pkg.name) % packageColors.length],
             };
-        }).sort((a, b) => (b.value || 0) - (a.value || 0));
+        }).sort((a, b) => {
+            if (viewMode !== ViewMode.relative) return 0;
+            return (b.value || 0) - (a.value || 0);
+        });
 
         return (
             <div className="custom-tooltip">
@@ -83,6 +99,7 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                     <div className="stat-label secondary-value">Total</div>
                     <div className="stat-label secondary-value">Net</div>
                     <div className="stat-label secondary-value">%</div>
+                    <div className="stat-label secondary-value">Rel</div>
 
                     {displayItems.map((entry: TooltipPayloadItem, index: number) => {
                         const pkgId = entry.dataKey as string;
@@ -90,15 +107,18 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                             downloads: 0,
                             rateChangePercent: 0,
                             absoluteChange: 0,
+                            relativeToFirst: 0,
                         };
-                        const { downloads, rateChangePercent, absoluteChange } = stats;
+                        const { downloads, rateChangePercent, absoluteChange, relativeToFirst } = stats;
 
                         const diffColor = colorPosNeg(absoluteChange);
                         const pctColor = colorPosNeg(rateChangePercent);
+                        const relColor = colorRelative(relativeToFirst);
 
                         const formattedAbs = formatNumber(downloads);
                         const formattedDiff = formatNumberChange(absoluteChange);
                         const formattedPct = formatNumberChangePercent(rateChangePercent);
+                        const formattedRel = formatNumberRelative(relativeToFirst);
 
                         return (
                             <Fragment key={pkgId || index}>
@@ -141,6 +161,19 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                                         }}
                                     >
                                         {formattedPct}
+                                    </span>
+                                </div>
+                                <div className="tooltip-row-value">
+                                    <span
+                                        className={viewMode === ViewMode.relative
+                                            ? 'stat-value'
+                                            : 'stat-label secondary-value'}
+                                        style={{
+                                            color: relColor,
+                                            fontWeight: viewMode === ViewMode.relative ? 'bold' : 'normal',
+                                        }}
+                                    >
+                                        {formattedRel}
                                     </span>
                                 </div>
                             </Fragment>

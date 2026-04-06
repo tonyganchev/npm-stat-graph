@@ -18,7 +18,7 @@ import {
     YAxis,
 } from 'recharts';
 
-import { ChartDataPoint, PackageConfig, ViewMode } from '../types';
+import { ChartDataPoint, PackageConfig, ViewMode, viewModeMetrics } from '../types';
 import { formatCompact, numberFormatChangePercent, packageColors } from '../utils';
 import { ChartTooltip } from './ChartTooltip';
 
@@ -49,17 +49,13 @@ export const LineChartView: FC<LineChartViewProps> = ({
         const newObj: Record<string, unknown> = { ...d };
         visiblePackages.forEach((pkg) => {
             const stats = d.pkgStats[pkg.name];
-            newObj[packageKeys[pkg.name]] = viewMode === ViewMode.percent
-                ? stats?.rateChangePercent
-                : viewMode === ViewMode.absoluteChange
-                    ? stats?.absoluteChange
-                    : stats?.downloads;
+            newObj[packageKeys[pkg.name]] = stats?.[viewModeMetrics[viewMode]];
         });
         return newObj;
     }), [chartData, visiblePackages, viewMode, packageKeys]);
 
     const formatValue = (value: number) => {
-        if (viewMode === ViewMode.percent) {
+        if (viewMode === ViewMode.percent || viewMode === ViewMode.relative) {
             return numberFormatChangePercent.format(value);
         }
         return formatCompact(value);
@@ -110,11 +106,7 @@ export const LineChartView: FC<LineChartViewProps> = ({
                 const color = packageColors[originalIndex % packageColors.length];
 
                 const values = chartData.map((d) =>
-                    viewMode === ViewMode.percent
-                        ? d.pkgStats[pkg.name]?.rateChangePercent
-                        : viewMode === ViewMode.absoluteChange
-                            ? d.pkgStats[pkg.name]?.absoluteChange
-                            : d.pkgStats[pkg.name]?.downloads,
+                    d.pkgStats[pkg.name]?.[viewModeMetrics[viewMode]],
                 ).filter((v): v is number => typeof v === 'number');
 
                 const minVal = values.length > 0 ? Math.min(...values) : null;
