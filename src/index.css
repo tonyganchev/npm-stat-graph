@@ -70,8 +70,6 @@ svg {
     shape-rendering: geometricPrecision;
 }
 
-
-
 header {
     animation: fadeInDown 0.6s ease-out;
     
@@ -89,7 +87,6 @@ header {
         }
     }
 }
-
 
 main {
     display: flex;
@@ -175,6 +172,10 @@ main {
     &.error:hover {
         background: rgba(239, 68, 68, 0.2);
     }
+
+    svg {
+        margin: 0px;
+    }
 }
 
 /* Inputs */
@@ -220,7 +221,6 @@ input[type="date"] {
     }
 }
 
-
 /* Components */
 .search-controls {
     display: flex;
@@ -253,7 +253,6 @@ input[type="date"] {
         width: 140px;
     }
 }
-
 
 .package-input-row {
     display: flex;
@@ -438,10 +437,6 @@ input[type="date"] {
     }
 }
 
-
-
-
-
 /* Chart Area */
 .chart-section {
     animation: fadeInUp 0.6s ease-out 0.4s both;
@@ -541,7 +536,6 @@ input[type="date"] {
         opacity: 1;
     }
 }
-
 
 .error-text {
     color: var(--error-color);
@@ -681,7 +675,6 @@ input[type="date"] {
     text-align: right;
 }
 
-
 .tooltip-row-value {
     text-align: right;
     font-variant-numeric: tabular-nums;
@@ -709,11 +702,9 @@ footer {
     }
 }
 
-
 a {
     color: var(--text-secondary);
     fill: var(--text-secondary);
-    margin-left: 1rem;
     transition: all 0.2s ease;
 
     &:hover {
@@ -722,12 +713,10 @@ a {
         fill: var(--text-primary);
     }
 
-    a {
-        svg {
-            vertical-align: text-bottom;
-            margin-left: 0.25rem;
-            margin-right: 0.25rem;
-        }
+    svg {
+        vertical-align: text-bottom;
+        margin-left: 0.25rem;
+        margin-right: 0.25rem;
     }
 }
 
