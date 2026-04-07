@@ -75,7 +75,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                     max={format(addMonths(startOfDay(new Date()), 18), isoDateFormat)}
                     disabled={isLoading}
                 />
-                <span className="date-separator">to</span>
+                to
                 <input
                     type="date"
                     className="input"

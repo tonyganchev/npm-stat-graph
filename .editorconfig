@@ -1,7 +1,8 @@
 root = true
 indent_style = space
+indent_size = 4
 
-[*.{js,mjs,md,ts,tsx}]
+[*.{js,mjs,md,ts,tsx,css}]
 indent_size = 4
 
 [package.json]
