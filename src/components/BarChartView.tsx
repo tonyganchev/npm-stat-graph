@@ -31,7 +31,7 @@ interface BarChartViewProps {
     height: number;
 }
 
-export const BarChartView: FC<BarChartViewProps> = ({
+const BarChartView: FC<BarChartViewProps> = ({
     chartData,
     visiblePackages,
     packages,
@@ -76,15 +76,8 @@ export const BarChartView: FC<BarChartViewProps> = ({
                     const x = Number(propX);
                     const y = Number(propY);
                     const axisWidth = Number(propWidth) || chartWidth || 0;
-                    // Precise bandwidth calculation based on the tracked
-                    // container width
                     const bandwidth = chartData.length > 0 ? axisWidth / chartData.length : 0;
-
-                    // Shift back to the boundary
                     const boundaryX = x - (bandwidth / 2);
-
-                    // Pull up to truly intersect the bar baseline (6px is the
-                    // default Recharts tick size)
                     const adjustedY = y - 6;
 
                     const step = Math.max(1, Math.floor(chartData.length / 8));
@@ -93,8 +86,6 @@ export const BarChartView: FC<BarChartViewProps> = ({
 
                     return (
                         <g transform={`translate(${boundaryX},${adjustedY})`}>
-                            {/* Unified Baseline: perfectly connected to the
-                                bottom of the bars */}
                             {index === 0 && (
                                 <line
                                     x1={0}
@@ -105,16 +96,12 @@ export const BarChartView: FC<BarChartViewProps> = ({
                                     strokeWidth={1}
                                 />
                             )}
-
-                            {/* Vertical Tick Mark: exactly touching the
-                                baseline */}
                             <line
                                 y1={0}
                                 y2={6}
                                 stroke="var(--text-secondary)"
                                 strokeWidth={1}
                             />
-
                             {showLabel && (
                                 <text
                                     dy={20}
@@ -125,8 +112,6 @@ export const BarChartView: FC<BarChartViewProps> = ({
                                     {chartData[index]?.shortDate}
                                 </text>
                             )}
-
-                            {/* Final boundary marker */}
                             {isLast && (
                                 <line
                                     x1={bandwidth}
@@ -140,7 +125,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
                         </g>
                     );
                 }}
-                axisLine={false} // Hidden in favor of our perfectly connected custom baseline above
+                axisLine={false}
                 tickMargin={0}
                 minTickGap={30}
             />
@@ -239,7 +224,7 @@ export const BarChartView: FC<BarChartViewProps> = ({
                     }
 
                     const { pkgStats, absMax } = payload;
-                    const y0 = maxY + maxHeight; // Base (zero-line)
+                    const y0 = maxY + maxHeight;
 
                     return (
                         <g>
@@ -275,3 +260,5 @@ export const BarChartView: FC<BarChartViewProps> = ({
         </BarChart>
     );
 };
+
+export default BarChartView;

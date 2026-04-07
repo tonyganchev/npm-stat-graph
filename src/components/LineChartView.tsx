@@ -32,7 +32,7 @@ interface LineChartViewProps {
     height: number;
 }
 
-export const LineChartView: FC<LineChartViewProps> = ({
+const LineChartView: FC<LineChartViewProps> = ({
     chartData,
     visiblePackages,
     packages,
@@ -148,3 +148,5 @@ export const LineChartView: FC<LineChartViewProps> = ({
         </LineChart>
     );
 };
+
+export default LineChartView;

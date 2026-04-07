@@ -7,7 +7,7 @@
  */
 
 import { Activity, AlertCircle, ExternalLink } from 'lucide-react';
-import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useState } from 'react';
+import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 
 import { fetchPackageStats } from './api/npmApi';
 import { ChartTypeToggle } from './components/ChartTypeToggle';
@@ -90,12 +90,26 @@ function App() {
         return () => clearTimeout(timer);
     }, [handleSearch, range, customStart, customEnd]);
 
-    // Filter out visible packages for charting
     const visiblePackages = useMemo(() => packages.filter((p) => p.visible && p.name.trim() !== ''), [packages]);
 
     // Use deferred values for charting to keep the autocomplete input snappy
     const deferredPackages = useDeferredValue(packages);
     const deferredVisiblePackages = useDeferredValue(visiblePackages);
+
+    const [isSticky, setIsSticky] = useState(false);
+    const sentinelRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        const observer = new IntersectionObserver(
+            ([e]) => setIsSticky(!e.isIntersecting),
+            { threshold: [0] },
+        );
+        const currentSentinel = sentinelRef.current;
+        if (currentSentinel) {
+            observer.observe(currentSentinel);
+        }
+        return () => observer.disconnect();
+    }, []);
 
     return (
         <>
@@ -125,7 +139,8 @@ function App() {
                     isLoading={isLoading}
                 />
 
-                <div className="filter-panel">
+                <div ref={sentinelRef} style={{ height: '1px', marginBottom: '-2rem', visibility: 'hidden' }} />
+                <div className={`filter-panel ${isSticky ? 'is-sticky' : ''}`}>
                     <DayFilter
                         enabledDays={enabledDays}
                         setEnabledDays={(days) => updateSync({ enabledDays: days })}

@@ -8,7 +8,7 @@
 
 import { getDay, parseISO } from 'date-fns';
 import { Activity } from 'lucide-react';
-import { memo, useEffect, useMemo, useRef, useState } from 'react';
+import { lazy, memo, Suspense, useEffect, useMemo, useRef, useState } from 'react';
 
 import { groupChartData } from '../chartUtils';
 import { ChartDataPoint, ChartType, CombinedData, GroupBy, PackageConfig, ViewMode } from '../types';
@@ -20,8 +20,9 @@ import {
     numberFormatRatio,
     packageColors,
 } from '../utils';
-import { BarChartView } from './BarChartView';
-import { LineChartView } from './LineChartView';
+
+const BarChartView = lazy(() => import('./BarChartView'));
+const LineChartView = lazy(() => import('./LineChartView'));
 
 interface StatChartProps {
     data: CombinedData[];
@@ -33,7 +34,7 @@ interface StatChartProps {
     chartType: ChartType;
 }
 
-const statChart = memo(({
+const StatChart = memo(({
     data,
     packages,
     visiblePackages,
@@ -153,8 +154,6 @@ const statChart = memo(({
         return distance >= 4 || chartData.length < 200;
     }, [chartWidth, chartData.length]);
 
-    // Removed local formatNumber in favor of formatCompact from utils.ts
-
     if (!chartData || chartData.length === 0 || visiblePackages.length === 0) {
         return (
             <div className="chart-section">
@@ -179,6 +178,8 @@ const statChart = memo(({
         [ViewMode.absoluteChange]: 'Net Change',
         [ViewMode.relative]: 'Relative Support',
     } as const;
+
+    const height = 400;
 
     return (
         <div className="chart-section">
@@ -233,31 +234,40 @@ const statChart = memo(({
                 </div>
             </div>
 
-            <div className="chart-container">
+            <div className="chart-container" style={{ height }}>
                 <div className="chart-inner" ref={chartContainerRef}>
                     {chartWidth > 0 && (
-                        chartType === ChartType.line
-                            ? (
-                                    <LineChartView
-                                        chartData={chartData}
-                                        visiblePackages={visiblePackages}
-                                        packages={packages}
-                                        viewMode={viewMode}
-                                        showDots={showDots}
-                                        chartWidth={chartWidth}
-                                        height={400}
-                                    />
-                                )
-                            : (
-                                    <BarChartView
-                                        chartData={chartData}
-                                        visiblePackages={visiblePackages}
-                                        packages={packages}
-                                        viewMode={viewMode}
-                                        chartWidth={chartWidth}
-                                        height={400}
-                                    />
-                                )
+                        <Suspense
+                            fallback={(
+                                <div className="state-container" style={{ height }}>
+                                    <Activity className="state-icon spinning" />
+                                    <p>Loading chart view...</p>
+                                </div>
+                            )}
+                        >
+                            {chartType === ChartType.line
+                                ? (
+                                        <LineChartView
+                                            chartData={chartData}
+                                            visiblePackages={visiblePackages}
+                                            packages={packages}
+                                            viewMode={viewMode}
+                                            showDots={showDots}
+                                            chartWidth={chartWidth}
+                                            height={height}
+                                        />
+                                    )
+                                : (
+                                        <BarChartView
+                                            chartData={chartData}
+                                            visiblePackages={visiblePackages}
+                                            packages={packages}
+                                            viewMode={viewMode}
+                                            chartWidth={chartWidth}
+                                            height={height}
+                                        />
+                                    )}
+                        </Suspense>
                     )}
                 </div>
             </div>
@@ -265,4 +275,4 @@ const statChart = memo(({
     );
 });
 
-export default statChart;
+export default StatChart;
