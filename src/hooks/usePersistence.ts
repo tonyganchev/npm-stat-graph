@@ -8,13 +8,13 @@
 
 import { useCallback, useState } from 'react';
 
-import { calculateDateRange, DateRangeType } from '../api/npmApi';
+import { calculateDateRange, DateRangeType } from '../dateRange';
 import { AppState, ChartType, PackageConfig, ViewMode } from '../types';
 import { defaultPackage } from '../utils';
 
 const storageKey = 'npm-stat-graph-state';
 
-const defaultDateRange = 'last-30-days';
+const defaultDateRange: DateRangeType = 'last-30-days';
 const allWeekDays = Array.from({ length: 7 }, (_, i) => i);
 
 const paramKeys = {

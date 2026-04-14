@@ -9,7 +9,7 @@
 import { addMonths, format, startOfDay } from 'date-fns';
 import { FC } from 'react';
 
-import { DateRangeType } from '../types';
+import { dateRangeTraits, DateRangeType } from '../dateRange';
 import { isoDateFormat, minDate } from '../utils';
 
 interface DateRangeSelectorProps {
@@ -36,25 +36,12 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
     return (
         <div className="search-controls-left">
             <div className="time-toggles">
-                {([
-                    ['last-7-days', '7 Days'],
-                    ['last-30-days', '30 Days'],
-                    ['last-quarter', 'Quarter'],
-                    ['last-6-months', '6 Months'],
-                    ['last-year', '1 Year'],
-                    ['last-2-years', '2 Years'],
-                    ['last-5-years', '5 Years'],
-                    ['last-10-years', '10 Years'],
-                    ['wtd', 'WTD'],
-                    ['mtd', 'MTD'],
-                    ['ytd', 'YTD'],
-                    ['custom', 'Custom'],
-                ] as const).map(([val, label]) => (
+                {Object.entries(dateRangeTraits).map(([val, { label }]) => (
                     <button
                         key={val}
                         type="button"
                         className={`filter-chip ${range === val ? 'active' : ''}`}
-                        onClick={() => onRangeChange(val)}
+                        onClick={() => onRangeChange(val as DateRangeType)}
                         disabled={isLoading}
                     >
                         {label}

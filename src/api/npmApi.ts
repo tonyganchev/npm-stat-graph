@@ -6,9 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { addDays, format, startOfDay, startOfMonth, startOfWeek, startOfYear, subMonths } from 'date-fns';
-
-import { isoDateFormat, minDate } from '../utils';
+import { calculateDateRange, DateRangeType } from '../dateRange';
 
 export interface DownloadStat {
     downloads: number;
@@ -21,60 +19,6 @@ export interface NpmStatsResponse {
     package: string;
     downloads: DownloadStat[];
     error?: string;
-}
-
-export type DateRangeType =
-    | 'last-7-days'
-    | 'last-30-days'
-    | 'last-quarter'
-    | 'last-6-months'
-    | 'last-year'
-    | 'last-2-years'
-    | 'last-5-years'
-    | 'last-10-years'
-    | 'ytd'
-    | 'mtd'
-    | 'wtd'
-    | 'custom';
-
-function periodStartDate(rangeType: DateRangeType) {
-    const yesterday = addDays(startOfDay(new Date()), -1);
-    if (rangeType === 'last-7-days') {
-        return addDays(yesterday, -7);
-    } else if (rangeType === 'last-30-days') {
-        return addDays(yesterday, -30);
-    } else if (rangeType === 'last-year') {
-        return subMonths(yesterday, 12);
-    } else if (rangeType === 'last-quarter') {
-        return subMonths(yesterday, 3);
-    } else if (rangeType === 'last-6-months') {
-        return subMonths(yesterday, 6);
-    } else if (rangeType === 'last-2-years') {
-        return subMonths(yesterday, 24);
-    } else if (rangeType === 'last-5-years') {
-        return subMonths(yesterday, 60);
-    } else if (rangeType === 'last-10-years') {
-        return subMonths(yesterday, 120);
-    } else if (rangeType === 'ytd') {
-        return startOfYear(yesterday);
-    } else if (rangeType === 'mtd') {
-        return startOfMonth(yesterday);
-    } else if (rangeType === 'wtd') {
-        // start of week, assuming Monday is the first day of the week
-        return startOfWeek(yesterday, { weekStartsOn: 1 });
-    }
-    throw new Error('unexpected period type: ' + rangeType);
-}
-
-export function calculateDateRange(rangeType: DateRangeType): { start: string; end: string } {
-    const yesterday = addDays(startOfDay(new Date()), -1);
-    const start = periodStartDate(rangeType);
-    const cappedStart = start < minDate ? minDate : start;
-
-    return {
-        start: format(cappedStart, isoDateFormat),
-        end: format(yesterday, isoDateFormat),
-    };
 }
 
 const apiCache = new Map<string, { data: NpmStatsResponse; timestamp: number }>();

@@ -9,8 +9,8 @@
 import { Loader2, Search } from 'lucide-react';
 import { FC, FormEvent } from 'react';
 
-import { calculateDateRange } from '../api/npmApi';
-import { DateRangeType, PackageConfig } from '../types';
+import { calculateDateRange, DateRangeType } from '../dateRange';
+import { PackageConfig } from '../types';
 import { DateRangeSelector } from './DateRangeSelector';
 import { PackageSelector } from './PackageSelector';
 

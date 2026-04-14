@@ -6,9 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { DateRangeType } from './api/npmApi';
-
-export type { DateRangeType };
+import { DateRangeType } from './dateRange';
 
 export interface PackageConfig {
     name: string;
