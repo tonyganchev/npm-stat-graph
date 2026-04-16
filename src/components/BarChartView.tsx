@@ -18,20 +18,12 @@ import {
     YAxis,
 } from 'recharts';
 
-import { ChartDataPoint, PackageConfig, ViewMode, viewModeMetrics } from '../types';
+import { ChartViewProps } from '../chartType';
 import { formatCompact, numberFormatChangePercent, numberFormatRatio, packageColors } from '../utils';
+import { ViewMode, viewModeTraits } from '../viewMode';
 import { ChartTooltip } from './ChartTooltip';
 
-interface BarChartViewProps {
-    chartData: ChartDataPoint[];
-    visiblePackages: PackageConfig[];
-    packages: PackageConfig[];
-    viewMode: ViewMode;
-    chartWidth: number;
-    height: number;
-}
-
-const BarChartView: FC<BarChartViewProps> = ({
+const BarChartView: FC<ChartViewProps> = ({
     chartData,
     visiblePackages,
     packages,
@@ -170,7 +162,7 @@ const BarChartView: FC<BarChartViewProps> = ({
                 const color = packageColors[originalIndex % packageColors.length];
 
                 const values = chartData
-                    .map((d) => d.pkgStats[pkg.name]?.[viewModeMetrics[viewMode]])
+                    .map((d) => d.pkgStats[pkg.name]?.[viewModeTraits[viewMode].metric])
                     .filter((v): v is number => typeof v === 'number');
 
                 const minVal = values.length > 0 ? Math.min(...values) : null;
@@ -230,7 +222,7 @@ const BarChartView: FC<BarChartViewProps> = ({
                         <g>
                             {visiblePackages.map((pkg) => {
                                 const stats = pkgStats[pkg.name];
-                                const val = stats?.[viewModeMetrics[viewMode]] || 0;
+                                const val = stats?.[viewModeTraits[viewMode].metric] || 0;
 
                                 const h = !absMax ? 0 : (Math.abs(val) / absMax) * maxHeight;
                                 const y = val >= 0 ? y0 - h : y0;

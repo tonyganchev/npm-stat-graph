@@ -6,13 +6,15 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { Activity, AlertCircle, ExternalLink } from 'lucide-react';
+import { AlertCircle, ExternalLink } from 'lucide-react';
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
+import { Else, If, Then } from 'react-if';
 
 import { fetchPackageStats } from './api/npmApi';
 import { ChartTypeToggle } from './components/ChartTypeToggle';
 import { DayFilter } from './components/DayFilter';
 import { GitHubIcon } from './components/GitHubIcon';
+import { Placeholder } from './components/Placeholder';
 import { SearchControls } from './components/SearchControls';
 import { ViewModeToggle } from './components/ViewModeToggle';
 import { usePersistence } from './hooks/usePersistence';
@@ -157,79 +159,79 @@ function App() {
                     />
                 </div>
 
-                {error && (
-                    <div className="state-container">
-                        <AlertCircle className="state-icon error" />
-                        <div className="error-text">
-                            <b>Error fetching data</b>
-                            <span>{error}</span>
-                        </div>
-                    </div>
-                )}
-
-                {partialErrors.length > 0 && !error && (
-                    <div className="partial-error-container">
-                        <div className="partial-error-header">
-                            <AlertCircle size={20} />
-                            {' '}
-                            Some data could not be fetched
-                        </div>
-                        <ul className="partial-error-list">
-                            {partialErrors.map((err, i) => <li key={i}>{err}</li>)}
-                        </ul>
-                    </div>
-                )}
-
-                {!error && data && data.length > 0 && (
-                    <div className="charts-stack">
-                        <Suspense fallback={(
-                            <div className="chart-section">
-                                <div className="state-container">
-                                    <Activity className="state-icon spinning" />
-                                    <p>Loading charts...</p>
-                                </div>
+                <If condition={error}>
+                    <Then>
+                        <div className="state-container">
+                            <AlertCircle className="state-icon error" />
+                            <div className="error-text">
+                                <b>Error fetching data</b>
+                                <span>{error}</span>
                             </div>
-                        )}
-                        >
-                            <StatChart
-                                data={data}
-                                packages={deferredPackages}
-                                visiblePackages={deferredVisiblePackages}
-                                groupBy="day"
-                                enabledDays={enabledDays}
-                                viewMode={viewMode}
-                                chartType={chartType}
-                            />
-                            <StatChart
-                                data={data}
-                                packages={deferredPackages}
-                                visiblePackages={deferredVisiblePackages}
-                                groupBy="week"
-                                enabledDays={enabledDays}
-                                viewMode={viewMode}
-                                chartType={chartType}
-                            />
-                            <StatChart
-                                data={data}
-                                packages={deferredPackages}
-                                visiblePackages={deferredVisiblePackages}
-                                groupBy="month"
-                                enabledDays={enabledDays}
-                                viewMode={viewMode}
-                                chartType={chartType}
-                            />
-                            <StatChart
-                                data={data}
-                                packages={deferredPackages}
-                                visiblePackages={deferredVisiblePackages}
-                                groupBy="year"
-                                enabledDays={enabledDays}
-                                viewMode={viewMode}
-                                chartType={chartType}
-                            />
-                        </Suspense>
-                    </div>
-                )}
+                        </div>
+                    </Then>
+                    <Else>
+                        <If condition={partialErrors.length > 0}>
+                            <Then>
+                                <div className="partial-error-container">
+                                    <div className="partial-error-header">
+                                        <AlertCircle size={20} />
+                                        {' '}
+                                        Some data could not be fetched
+                                    </div>
+                                    <ul className="partial-error-list">
+                                        {partialErrors.map((err, i) => <li key={i}>{err}</li>)}
+                                    </ul>
+                                </div>
+                            </Then>
+                            <Else>
+                                <If condition={data && data.length > 0}>
+                                    <Then>
+                                        <div className="charts-stack">
+                                            <Suspense fallback={<Placeholder loading={true} />}>
+                                                <StatChart
+                                                    data={data!}
+                                                    packages={deferredPackages}
+                                                    visiblePackages={deferredVisiblePackages}
+                                                    groupBy="day"
+                                                    enabledDays={enabledDays}
+                                                    viewMode={viewMode}
+                                                    chartType={chartType}
+                                                />
+                                                <StatChart
+                                                    data={data!}
+                                                    packages={deferredPackages}
+                                                    visiblePackages={deferredVisiblePackages}
+                                                    groupBy="week"
+                                                    enabledDays={enabledDays}
+                                                    viewMode={viewMode}
+                                                    chartType={chartType}
+                                                />
+                                                <StatChart
+                                                    data={data!}
+                                                    packages={deferredPackages}
+                                                    visiblePackages={deferredVisiblePackages}
+                                                    groupBy="month"
+                                                    enabledDays={enabledDays}
+                                                    viewMode={viewMode}
+                                                    chartType={chartType}
+                                                />
+                                                <StatChart
+                                                    data={data!}
+                                                    packages={deferredPackages}
+                                                    visiblePackages={deferredVisiblePackages}
+                                                    groupBy="year"
+                                                    enabledDays={enabledDays}
+                                                    viewMode={viewMode}
+                                                    chartType={chartType}
+                                                />
+                                            </Suspense>
+                                        </div>
+                                    </Then>
+                                </If>
+                            </Else>
+                        </If>
+                    </Else>
+                </If>
             </main>
             <footer>
                 <div>

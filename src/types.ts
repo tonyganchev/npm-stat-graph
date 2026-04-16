@@ -6,7 +6,9 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
+import { ChartType } from './chartType';
 import { DateRangeType } from './dateRange';
+import { ViewMode } from './viewMode';
 
 export interface PackageConfig {
     name: string;
@@ -36,25 +38,6 @@ export interface ChartDataPoint {
 }
 
 export type GroupBy = 'day' | 'week' | 'month' | 'year';
-
-export enum ViewMode {
-    absolute = 'absolute',
-    percent = 'percent',
-    absoluteChange = 'absolute-change',
-    relative = 'relative',
-}
-
-export const viewModeMetrics: Record<ViewMode, keyof PeriodMetrics> = {
-    [ViewMode.absolute]: 'downloads',
-    [ViewMode.absoluteChange]: 'absoluteChange',
-    [ViewMode.percent]: 'rateChangePercent',
-    [ViewMode.relative]: 'relativeToFirst',
-} as const;
-
-export enum ChartType {
-    line = 'line',
-    bar = 'bar',
-}
 
 export interface AppState {
     packages: PackageConfig[];

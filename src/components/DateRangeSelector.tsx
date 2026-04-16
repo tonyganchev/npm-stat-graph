@@ -39,7 +39,6 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                 {Object.entries(dateRangeTraits).map(([val, { label }]) => (
                     <button
                         key={val}
-                        type="button"
                         className={`filter-chip ${range === val ? 'active' : ''}`}
                         onClick={() => onRangeChange(val as DateRangeType)}
                         disabled={isLoading}

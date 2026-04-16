@@ -6,10 +6,9 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
-import { BarChart3, Diff, Percent, Scaling } from 'lucide-react';
 import { FC } from 'react';
 
-import { ViewMode } from '../types';
+import { ViewMode, viewModeTraits } from '../viewMode';
 
 export interface ViewModeToggleProps {
     viewMode: ViewMode;
@@ -18,37 +17,17 @@ export interface ViewModeToggleProps {
 
 export const ViewModeToggle: FC<ViewModeToggleProps> = ({ viewMode, setViewMode }) => (
     <div className="view-mode-toggle filter-chips">
-        <button
-            onClick={() => setViewMode(ViewMode.absolute)}
-            className={`filter-chip ${viewMode === ViewMode.absolute ? 'active' : ''}`}
-            title="Total Downloads"
-        >
-            <BarChart3 size={16} />
-            <span>Absolute</span>
-        </button>
-        <button
-            onClick={() => setViewMode(ViewMode.absoluteChange)}
-            className={`filter-chip ${viewMode === ViewMode.absoluteChange ? 'active' : ''}`}
-            title="Absolute Change (Diff)"
-        >
-            <Diff size={16} />
-            <span>Net Change</span>
-        </button>
-        <button
-            onClick={() => setViewMode(ViewMode.percent)}
-            className={`filter-chip ${viewMode === ViewMode.percent ? 'active' : ''}`}
-            title="Percentage Change"
-        >
-            <Percent size={14} />
-            <span>Rate %</span>
-        </button>
-        <button
-            onClick={() => setViewMode(ViewMode.relative)}
-            className={`filter-chip ${viewMode === ViewMode.relative ? 'active' : ''}`}
-            title="Relative to First Package"
-        >
-            <Scaling size={16} />
-            <span>Relative</span>
-        </button>
+        {
+            Object.entries(viewModeTraits).map(([mode, trait]) => (
+                <button
+                    onClick={() => setViewMode(mode as ViewMode)}
+                    className={`filter-chip ${viewMode === mode ? 'active' : ''}`}
+                    title={trait.button.tooltip}
+                >
+                    <trait.button.icon size={16} />
+                    <span>{trait.button.label}</span>
+                </button>
+            ))
+        }
     </div>
 );

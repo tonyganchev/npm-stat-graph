@@ -18,26 +18,16 @@ import {
     YAxis,
 } from 'recharts';
 
-import { ChartDataPoint, PackageConfig, ViewMode, viewModeMetrics } from '../types';
+import { ChartViewProps } from '../chartType';
 import { formatCompact, numberFormatChangePercent, numberFormatRatio, packageColors } from '../utils';
+import { ViewMode, viewModeTraits } from '../viewMode';
 import { ChartTooltip } from './ChartTooltip';
 
-interface LineChartViewProps {
-    chartData: ChartDataPoint[];
-    visiblePackages: PackageConfig[];
-    packages: PackageConfig[];
-    viewMode: ViewMode;
-    showDots: boolean;
-    chartWidth: number;
-    height: number;
-}
-
-const LineChartView: FC<LineChartViewProps> = ({
+const LineChartView: FC<ChartViewProps> = ({
     chartData,
     visiblePackages,
     packages,
     viewMode,
-    showDots,
     chartWidth,
     height,
 }) => {
@@ -49,7 +39,7 @@ const LineChartView: FC<LineChartViewProps> = ({
         const newObj: Record<string, unknown> = { ...d };
         visiblePackages.forEach((pkg) => {
             const stats = d.pkgStats[pkg.name];
-            newObj[packageKeys[pkg.name]] = stats?.[viewModeMetrics[viewMode]];
+            newObj[packageKeys[pkg.name]] = stats?.[viewModeTraits[viewMode].metric];
         });
         return newObj;
     }), [chartData, visiblePackages, viewMode, packageKeys]);
@@ -63,6 +53,15 @@ const LineChartView: FC<LineChartViewProps> = ({
         }
         return formatCompact(value);
     };
+
+    const showDots = useMemo(() => {
+        if (!chartWidth || chartData.length <= 1) {
+            return false;
+        }
+        const plotWidth = chartWidth - 80;
+        const distance = plotWidth / chartData.length;
+        return distance >= 4 || chartData.length < 200;
+    }, [chartWidth, chartData.length]);
 
     return (
         <LineChart
@@ -109,7 +108,7 @@ const LineChartView: FC<LineChartViewProps> = ({
                 const color = packageColors[originalIndex % packageColors.length];
 
                 const values = chartData.map((d) =>
-                    d.pkgStats[pkg.name]?.[viewModeMetrics[viewMode]],
+                    d.pkgStats[pkg.name]?.[viewModeTraits[viewMode].metric],
                 ).filter((v): v is number => typeof v === 'number');
 
                 const minVal = values.length > 0 ? Math.min(...values) : null;

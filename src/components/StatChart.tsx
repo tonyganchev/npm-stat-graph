@@ -7,22 +7,15 @@
  */
 
 import { getDay, parseISO } from 'date-fns';
-import { Activity } from 'lucide-react';
-import { lazy, memo, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { memo, Suspense, useEffect, useMemo, useRef, useState } from 'react';
+import { If, Then } from 'react-if';
 
+import { ChartType, chartTypeTraits } from '../chartType';
 import { groupChartData } from '../chartUtils';
-import { ChartDataPoint, ChartType, CombinedData, GroupBy, PackageConfig, ViewMode } from '../types';
-import {
-    formatCompact,
-    numberFormatBasicPercent,
-    numberFormatChange,
-    numberFormatChangePercent,
-    numberFormatRatio,
-    packageColors,
-} from '../utils';
-
-const BarChartView = lazy(() => import('./BarChartView'));
-const LineChartView = lazy(() => import('./LineChartView'));
+import { ChartDataPoint, CombinedData, GroupBy, PackageConfig } from '../types';
+import { ViewMode, viewModeTraits } from '../viewMode';
+import { ChartHeader } from './ChartHeader';
+import { Placeholder } from './Placeholder';
 
 interface StatChartProps {
     data: CombinedData[];
@@ -81,17 +74,7 @@ const StatChart = memo(({
 
             // Add max value for domain calculation
             const relevantStats = visiblePackages.map((p) => newItem.pkgStats[p.name]);
-            let vals: number[];
-            if (viewMode === ViewMode.percent) {
-                vals = relevantStats.map((s) => s?.rateChangePercent || 0);
-            } else if (viewMode === ViewMode.absoluteChange) {
-                vals = relevantStats.map((s) => s?.absoluteChange || 0);
-            } else if (viewMode === ViewMode.relative) {
-                vals = relevantStats.map((s) => s?.relativeToFirst || 0);
-            } else {
-                vals = relevantStats.map((s) => s?.downloads || 0);
-            }
-
+            const vals = relevantStats.map((s) => s[viewModeTraits[viewMode].metric]);
             const minThreshold = (viewMode === ViewMode.percent || viewMode === ViewMode.relative) ? 0.01 : 1;
             newItem.absMax = Math.max(...vals.map((v) => Math.abs(v)), minThreshold);
             newItem.displayMax = Math.max(...vals, minThreshold);
@@ -100,34 +83,6 @@ const StatChart = memo(({
             return newItem;
         });
     }, [data, groupBy, packages, visiblePackages, enabledDays, viewMode]);
-
-    const packageSortValues = useMemo(() => {
-        const values: { [name: string]: number } = {};
-        packages.forEach((p) => values[p.name] = 0);
-
-        const count = chartData.length || 1;
-        chartData.forEach((item) => {
-            packages.forEach((p) => {
-                const stats = item.pkgStats?.[p.name];
-                if (viewMode === ViewMode.percent) {
-                    values[p.name] += stats?.rateChangePercent || 0;
-                } else if (viewMode === ViewMode.absoluteChange) {
-                    values[p.name] += stats?.absoluteChange || 0;
-                } else if (viewMode === ViewMode.relative) {
-                    values[p.name] += stats?.relativeToFirst || 0;
-                } else {
-                    values[p.name] += stats?.downloads || 0;
-                }
-            });
-        });
-
-        if (viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange || viewMode === ViewMode.relative) {
-            packages.forEach((p) => {
-                values[p.name] = values[p.name] / count;
-            });
-        }
-        return values;
-    }, [chartData, packages, viewMode]);
 
     const chartContainerRef = useRef<HTMLDivElement>(null);
     const [chartWidth, setChartWidth] = useState<number>(0);
@@ -145,130 +100,41 @@ const StatChart = memo(({
         return () => observer.disconnect();
     }, []);
 
-    const showDots = useMemo(() => {
-        if (!chartWidth || chartData.length <= 1) {
-            return false;
-        }
-        const plotWidth = chartWidth - 80;
-        const distance = plotWidth / chartData.length;
-        return distance >= 4 || chartData.length < 200;
-    }, [chartWidth, chartData.length]);
-
     if (!chartData || chartData.length === 0 || visiblePackages.length === 0) {
-        return (
-            <div className="chart-section">
-                <div className="state-container">
-                    <Activity className="state-icon" />
-                    <p>No active data available to display.</p>
-                </div>
-            </div>
-        );
+        return <Placeholder loading={false} />;
     }
-
-    const groupByTitle = {
-        day: 'Daily',
-        week: 'Weekly',
-        month: 'Monthly',
-        year: 'Yearly',
-    } as const;
-
-    const viewModeTitle = {
-        [ViewMode.absolute]: 'Downloads',
-        [ViewMode.percent]: 'Change',
-        [ViewMode.absoluteChange]: 'Net Change',
-        [ViewMode.relative]: 'Relative Support',
-    } as const;
 
     const height = 400;
 
+    const ChartView = chartTypeTraits[chartType].component;
     return (
         <div className="chart-section">
-            <div className="chart-header">
-                <div className="stat-summary stat-summary-main">
-                    <span className="stat-label">
-                        {groupByTitle[groupBy]}
-                        &nbsp;
-                        {viewModeTitle[viewMode]}
-                    </span>
-                </div>
-                <div className="chart-summary-group">
-                    {[...visiblePackages]
-                        .sort((a, b) => (packageSortValues[b.name] || 0) - (packageSortValues[a.name] || 0))
-                        .map((pkg, i) => {
-                            const originalIndex = packages.findIndex((p) => p.name === pkg.name);
-                            const pkgClass = `pkg-${originalIndex % packageColors.length}`;
-                            const val = packageSortValues[pkg.name] || 0;
-                            const isChange = viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange;
-                            const isRelative = viewMode === ViewMode.relative;
-
-                            let statusClass = '';
-                            if (isRelative) {
-                                statusClass = val > 1 ? 'undesirable-value' : val < 1 ? 'desirable-value' : '';
-                            } else if (isChange) {
-                                statusClass = val > 0
-                                    ? 'desirable-value'
-                                    : val < 0 ? 'undesirable-value' : 'baseline-value';
-                            }
-
-                            const formattedValue = isRelative
-                                ? (val > 1
-                                        ? `${numberFormatRatio.format(val)}x`
-                                        : val === 1
-                                            ? 'baseline'
-                                            : numberFormatBasicPercent.format(val)) + ' avg'
-                                : viewMode === ViewMode.percent
-                                    ? `${numberFormatChangePercent.format(val)} avg`
-                                    : viewMode === ViewMode.absoluteChange
-                                        ? `${numberFormatChange.format(Math.round(val))} avg`
-                                        : formatCompact(val);
-
-                            return (
-                                <div className="stat-summary" key={i}>
-                                    <span className={`stat-label ${pkgClass}`}>{pkg.name}</span>
-                                    <span className={`stat-value ${statusClass}`}>
-                                        {formattedValue}
-                                    </span>
-                                </div>
-                            );
-                        })}
-                </div>
-            </div>
+            <ChartHeader
+                chartData={chartData}
+                visiblePackages={visiblePackages}
+                packages={packages}
+                viewMode={viewMode}
+                enabledDays={enabledDays}
+                chartType={chartType}
+                groupBy={groupBy}
+            />
 
             <div className="chart-container" style={{ height }}>
                 <div className="chart-inner" ref={chartContainerRef}>
-                    {chartWidth > 0 && (
-                        <Suspense
-                            fallback={(
-                                <div className="state-container" style={{ height }}>
-                                    <Activity className="state-icon spinning" />
-                                    <p>Loading chart view...</p>
-                                </div>
-                            )}
-                        >
-                            {chartType === ChartType.line
-                                ? (
-                                        <LineChartView
-                                            chartData={chartData}
-                                            visiblePackages={visiblePackages}
-                                            packages={packages}
-                                            viewMode={viewMode}
-                                            showDots={showDots}
-                                            chartWidth={chartWidth}
-                                            height={height}
-                                        />
-                                    )
-                                : (
-                                        <BarChartView
-                                            chartData={chartData}
-                                            visiblePackages={visiblePackages}
-                                            packages={packages}
-                                            viewMode={viewMode}
-                                            chartWidth={chartWidth}
-                                            height={height}
-                                        />
-                                    )}
-                        </Suspense>
-                    )}
+                    <If condition={chartWidth > 0}>
+                        <Then>
+                            <Suspense fallback={<Placeholder loading={true} />}>
+                                <ChartView
+                                    chartData={chartData}
+                                    visiblePackages={visiblePackages}
+                                    packages={packages}
+                                    viewMode={viewMode}
+                                    chartWidth={chartWidth}
+                                    height={height}
+                                />
+                            </Suspense>
+                        </Then>
+                    </If>
                 </div>
             </div>
         </div>

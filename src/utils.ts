@@ -61,3 +61,28 @@ export const formatCompact = (num: number) => {
     }
     return num.toFixed(0);
 };
+
+function valueClass(value: number, threshold: number) {
+    if (value === threshold) {
+        return 'baseline-value';
+    }
+    return value > threshold ? 'desirable-value' : 'undesirable-value';
+}
+
+export function changeValueClass(value: number) {
+    return valueClass(value, 0);
+}
+
+export function relativeValueClass(value: number) {
+    return valueClass(-value, -1);
+}
+
+export function formatRatio(value: number) {
+    if (value === 1) {
+        return 'baseline';
+    }
+    if (value > 1) {
+        return '' + numberFormatRatio.format(value) + 'x';
+    }
+    return numberFormatBasicPercent.format(value);
+}

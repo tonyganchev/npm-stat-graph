@@ -8,9 +8,11 @@
 
 import { useCallback, useState } from 'react';
 
+import { ChartType } from '../chartType';
 import { calculateDateRange, DateRangeType } from '../dateRange';
-import { AppState, ChartType, PackageConfig, ViewMode } from '../types';
+import { AppState, PackageConfig } from '../types';
 import { defaultPackage } from '../utils';
+import { ViewMode } from '../viewMode';
 
 const storageKey = 'npm-stat-graph-state';
 

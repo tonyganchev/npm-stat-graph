@@ -8,14 +8,9 @@
 
 import { FC, Fragment } from 'react';
 
-import { ChartDataPoint, PackageConfig, ViewMode, viewModeMetrics } from '../types';
-import {
-    numberFormatBasic,
-    numberFormatBasicPercent,
-    numberFormatChange,
-    numberFormatChangePercent,
-    numberFormatRatio,
-} from '../utils';
+import { ChartDataPoint, PackageConfig } from '../types';
+import { packageColors } from '../utils';
+import { ViewMode, viewModeTraits } from '../viewMode';
 
 interface TooltipPayloadItem {
     dataKey?: string | number;
@@ -36,52 +31,21 @@ interface ChartTooltipProps {
     viewMode: ViewMode;
 }
 
-const formatNumber = (num: number) => numberFormatBasic.format(num);
-const formatNumberChange = (num: number) => numberFormatChange.format(num);
-const formatNumberChangePercent = (num: number) => numberFormatChangePercent.format(num);
-const formatNumberRelative = (num: number) => {
-    if (num > 1) {
-        return `${numberFormatRatio.format(num)}x`;
-    } else if (num === 1) {
-        return 'baseline';
-    } else {
-        return numberFormatBasicPercent.format(num);
-    }
+const noMetrics = {
+    downloads: 0,
+    rateChangePercent: 0,
+    absoluteChange: 0,
+    relativeToFirst: 0,
 };
-
-function classPosNeg(value: number) {
-    if (value > 0) {
-        return 'desirable-value';
-    } else if (value < 0) {
-        return 'undesirable-value';
-    } else {
-        return 'baseline-value';
-    }
-}
-
-function classRelative(value: number) {
-    if (value > 1) {
-        return 'undesirable-value'; // Red for over 100%
-    } else if (value < 1) {
-        return 'desirable-value'; // Green for under 100%
-    } else {
-        return 'baseline-value';
-    }
-}
 
 export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePackages, packages, viewMode }) => {
     if (active && payload && payload.length) {
         const dataPoint = payload[0].payload;
 
         const displayItems: TooltipPayloadItem[] = visiblePackages.map((pkg) => {
-            const stats = dataPoint.pkgStats?.[pkg.name] || {
-                downloads: 0,
-                rateChangePercent: 0,
-                absoluteChange: 0,
-                relativeToFirst: 0,
-            };
+            const stats = dataPoint.pkgStats[pkg.name] || noMetrics;
 
-            const value = stats[viewModeMetrics[viewMode]];
+            const value = stats[viewModeTraits[viewMode].metric];
             const pkgIndex = packages.findIndex((p) => p.name === pkg.name);
 
             return {
@@ -89,38 +53,24 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                 name: pkg.name,
                 value,
                 payload: dataPoint,
-                pkgClass: `pkg-${pkgIndex % 8}`,
+                pkgClass: `pkg-${pkgIndex % packageColors.length}`,
             };
-        }).sort((a, b) => (b.value || 0) - (a.value || 0));
+        }).sort((a, b) => b.value - a.value);
 
         return (
             <div className="custom-tooltip">
                 <p className="stat-label custom-tooltip-label">{dataPoint.formattedDate}</p>
                 <div className="tooltip-grid">
                     <div />
-                    <div className="stat-label secondary-value">Total</div>
-                    <div className="stat-label secondary-value">Net</div>
-                    <div className="stat-label secondary-value">%</div>
-                    <div className="stat-label secondary-value">Rel</div>
+                    {Object.values(viewModeTraits).map((trait) => (
+                        <div className="stat-label secondary-value">
+                            {trait.tooltip.headerLabel}
+                        </div>
+                    ))}
 
                     {displayItems.map((entry: TooltipPayloadItem, index: number) => {
                         const pkgId = entry.dataKey as string;
-                        const stats = entry.payload.pkgStats?.[pkgId] || {
-                            downloads: 0,
-                            rateChangePercent: 0,
-                            absoluteChange: 0,
-                            relativeToFirst: 0,
-                        };
-                        const { downloads, rateChangePercent, absoluteChange, relativeToFirst } = stats;
-
-                        const diffClass = classPosNeg(absoluteChange);
-                        const pctClass = classPosNeg(rateChangePercent);
-                        const relClass = classRelative(relativeToFirst);
-
-                        const formattedAbs = formatNumber(downloads);
-                        const formattedDiff = formatNumberChange(absoluteChange);
-                        const formattedPct = formatNumberChangePercent(rateChangePercent);
-                        const formattedRel = formatNumberRelative(relativeToFirst);
+                        const stats = entry.payload.pkgStats[pkgId] || noMetrics;
 
                         return (
                             <Fragment key={pkgId || index}>
@@ -129,52 +79,19 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                                         {entry.name + ':'}
                                     </span>
                                 </div>
-                                <div className="tooltip-row-value">
-                                    <span
-                                        className={viewMode === ViewMode.absolute
-                                            ? 'stat-value'
-                                            : 'stat-label secondary-value'}
-                                        style={{ fontWeight: viewMode === ViewMode.absolute ? 'bold' : 'normal' }}
-                                    >
-                                        {formattedAbs}
-                                    </span>
-                                </div>
-                                <div className="tooltip-row-value">
-                                    <span
-                                        className={`${viewMode === ViewMode.absoluteChange
-                                            ? 'stat-value'
-                                            : 'stat-label secondary-value'} ${diffClass}`}
-                                        style={{
-                                            fontWeight: viewMode === ViewMode.absoluteChange ? 'bold' : 'normal',
-                                        }}
-                                    >
-                                        {formattedDiff}
-                                    </span>
-                                </div>
-                                <div className="tooltip-row-value">
-                                    <span
-                                        className={`${viewMode === ViewMode.percent
-                                            ? 'stat-value'
-                                            : 'stat-label secondary-value'} ${pctClass}`}
-                                        style={{
-                                            fontWeight: viewMode === ViewMode.percent ? 'bold' : 'normal',
-                                        }}
-                                    >
-                                        {formattedPct}
-                                    </span>
-                                </div>
-                                <div className="tooltip-row-value">
-                                    <span
-                                        className={`${viewMode === ViewMode.relative
-                                            ? 'stat-value'
-                                            : 'stat-label secondary-value'} ${relClass}`}
-                                        style={{
-                                            fontWeight: viewMode === ViewMode.relative ? 'bold' : 'normal',
-                                        }}
-                                    >
-                                        {formattedRel}
-                                    </span>
-                                </div>
+                                {Object.entries(viewModeTraits).map(([vm, traits]) => (
+                                    <div className="tooltip-row-value">
+                                        <span
+                                            className={`${viewMode === vm
+                                                ? 'stat-value'
+                                                : 'stat-label secondary-value'}
+                                                ${traits.tooltip.valueClassFn(stats[traits.metric])}`}
+                                            style={{ fontWeight: viewMode === vm ? 'bold' : 'normal' }}
+                                        >
+                                            {traits.tooltip.formatFn(stats[traits.metric])}
+                                        </span>
+                                    </div>
+                                ))}
                             </Fragment>
                         );
                     })}
