@@ -7,7 +7,7 @@
  */
 
 import { addMonths, format, startOfDay } from 'date-fns';
-import { FC } from 'react';
+import { FC, Fragment } from 'react';
 
 import { dateRangeTraits, DateRangeType } from '../dateRange';
 import { isoDateFormat, minDate } from '../utils';
@@ -34,7 +34,7 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
     isLoading,
 }) => {
     return (
-        <div className="search-controls-left">
+        <Fragment>
             <div className="time-toggles">
                 {Object.entries(dateRangeTraits).map(([val, { label }]) => (
                     <button
@@ -75,6 +75,6 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
                     disabled={isLoading}
                 />
             </div>
-        </div>
+        </Fragment>
     );
 };

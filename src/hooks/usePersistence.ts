@@ -45,7 +45,10 @@ export function usePersistence() {
 
         const urlRange = params.get(paramKeys.range) as DateRangeType;
         const urlDaysRaw = params.get(paramKeys.days);
-        const urlDays = urlDaysRaw ? urlDaysRaw.split(',').map(Number) : null;
+        let urlDays = urlDaysRaw ? urlDaysRaw.split(',').map(Number).filter((v) => v <= 6) : allWeekDays;
+        if (urlDays.length === 0) {
+            urlDays.push(...allWeekDays);
+        }
 
         let state: Partial<AppState> | null = null;
 
@@ -55,7 +58,7 @@ export function usePersistence() {
                 range: urlRange || defaultDateRange,
                 customStart: params.get(paramKeys.start) || '',
                 customEnd: params.get(paramKeys.end) || '',
-                enabledDays: urlDays || allWeekDays,
+                enabledDays: urlDays,
                 viewMode: Object.values(ViewMode).includes(params.get(paramKeys.viewMode) as ViewMode)
                     ? params.get(paramKeys.viewMode) as ViewMode
                     : ViewMode.absolute,

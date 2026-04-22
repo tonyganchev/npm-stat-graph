@@ -231,13 +231,6 @@ input[type="date"] {
     width: 100%;
 }
 
-.search-controls-left {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    gap: 1rem;
-}
-
 .time-toggles {
     display: flex;
     flex-wrap: wrap;
