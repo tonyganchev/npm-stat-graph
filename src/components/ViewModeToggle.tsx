@@ -21,11 +21,12 @@ export const ViewModeToggle: FC<ViewModeToggleProps> = ({ viewMode, setViewMode 
             Object.entries(viewModeTraits).map(([mode, trait]) => (
                 <button
                     onClick={() => setViewMode(mode as ViewMode)}
-                    className={`filter-chip ${viewMode === mode ? 'active' : ''}`}
+                    className={`filter-chip icon-text-button ${viewMode === mode ? 'active' : ''}`}
                     title={trait.button.tooltip}
+                    aria-label={trait.button.tooltip}
                 >
                     <trait.button.icon size={16} />
-                    <span>{trait.button.label}</span>
+                    <span className="icon-text-label">{trait.button.label}</span>
                 </button>
             ))
         }

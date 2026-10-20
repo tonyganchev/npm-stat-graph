@@ -129,9 +129,16 @@ export const PackageSelector: FC<PackageSelectorProps> = ({
             ))}
 
             <div className="search-actions">
-                <button type="button" className="btn" onClick={addPackage} disabled={isLoading}>
+                <button
+                    type="button"
+                    className="btn icon-text-button"
+                    onClick={addPackage}
+                    disabled={isLoading}
+                    aria-label="Add Package"
+                    title="Add Package"
+                >
                     <Plus size={16} />
-                    Add Package
+                    <span className="icon-text-label">Add Package</span>
                 </button>
             </div>
         </div>

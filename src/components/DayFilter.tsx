@@ -27,7 +27,7 @@ export const DayFilter: FC<DayFilterProps> = ({ enabledDays, setEnabledDays }) =
     };
 
     return (
-        <div className="filter-chips">
+        <div className="filter-chips day-filter-chips">
             {Object.entries(daysOfWeek).map(([label, day]) => {
                 const isActive = enabledDays.includes(day);
                 return (
@@ -35,8 +35,11 @@ export const DayFilter: FC<DayFilterProps> = ({ enabledDays, setEnabledDays }) =
                         key={day}
                         onClick={() => toggleDay(day)}
                         className={`filter-chip ${isActive ? 'active' : ''}`}
+                        aria-label={label}
+                        title={label}
                     >
-                        {label}
+                        <span className="day-filter-label-full">{label}</span>
+                        <span className="day-filter-label-short" aria-hidden="true">{label[0]}</span>
                     </button>
                 );
             })}

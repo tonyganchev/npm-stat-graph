@@ -69,11 +69,12 @@ export const SearchControls: FC<SearchControlsProps> = ({
 
                 <button
                     type="submit"
-                    className="btn btn-primary btn-search-main"
+                    className="btn btn-primary btn-search-main icon-text-button"
                     disabled={isLoading || !hasPackages}
+                    aria-label="Search"
                 >
                     {isLoading ? <Loader2 className="spinning" size={20} /> : <Search size={20} />}
-                    Search
+                    <span className="icon-text-label">Search</span>
                 </button>
             </div>
         </form>

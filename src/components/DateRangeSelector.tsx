@@ -36,14 +36,17 @@ export const DateRangeSelector: FC<DateRangeSelectorProps> = ({
     return (
         <Fragment>
             <div className="time-toggles">
-                {Object.entries(dateRangeTraits).map(([val, { label }]) => (
+                {Object.entries(dateRangeTraits).map(([val, { label, shortLabel }]) => (
                     <button
                         key={val}
                         className={`filter-chip ${range === val ? 'active' : ''}`}
                         onClick={() => onRangeChange(val as DateRangeType)}
                         disabled={isLoading}
+                        aria-label={label}
+                        title={label}
                     >
-                        {label}
+                        <span className="range-label-full">{label}</span>
+                        <span className="range-label-short" aria-hidden="true">{shortLabel}</span>
                     </button>
                 ))}
             </div>

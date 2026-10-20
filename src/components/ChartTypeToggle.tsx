@@ -20,11 +20,12 @@ export const ChartTypeToggle: FC<ChartTypeToggleProps> = ({ chartType, setChartT
         {Object.entries(chartTypeTraits).map(([ct, trait]) => (
             <button
                 onClick={() => setChartType(ct as ChartType)}
-                className={`filter-chip ${chartType === ct ? 'active' : ''}`}
+                className={`filter-chip icon-text-button ${chartType === ct ? 'active' : ''}`}
                 title={trait.button.tooltip}
+                aria-label={trait.button.tooltip}
             >
                 <trait.button.icon size={16} />
-                <span>{trait.button.label}</span>
+                <span className="icon-text-label">{trait.button.label}</span>
             </button>
         ))}
     </div>
