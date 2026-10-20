@@ -481,8 +481,6 @@ input[type="date"] {
 }
 
 .stat-label {
-    /* font-weight: bold; */
-    letter-spacing: 0.08rem;
     color: var(--text-secondary);
 }
 
