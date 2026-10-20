@@ -444,24 +444,15 @@ input[type="date"] {
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
     flex-wrap: wrap;
     gap: 1rem;
-}
-
-.chart-summary-group {
-    display: flex;
-    gap: 1.5rem;
-    flex: 2;
-    justify-content: flex-end;
-    text-align: right;
-    flex-wrap: wrap;
 }
 
 .stat-summary {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    text-align: right;
 }
 
 .stat-summary-main {

@@ -103,30 +103,30 @@ export const ChartHeader = memo(({
                     {viewModeTitle[viewMode]}
                 </span>
             </div>
-            <div className="chart-summary-group">
-                {[...visiblePackages]
-                    .sort((a, b) => (packageSortValues[b.name] || 0) - (packageSortValues[a.name] || 0))
-                    .map((pkg, i) => {
-                        const originalIndex = packages.findIndex((p) => p.name === pkg.name);
-                        const pkgClass = `pkg-${originalIndex % packageColors.length}`;
-                        const val = packageSortValues[pkg.name] || 0;
-                        const isChange = viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange;
-                        const isRelative = viewMode === ViewMode.relative;
 
-                        const statusClass = summaryStatusClass(isRelative, val, isChange);
+            {[...visiblePackages]
+                .sort((a, b) => (packageSortValues[b.name] || 0) - (packageSortValues[a.name] || 0))
+                .map((pkg, i) => {
+                    const originalIndex = packages.findIndex((p) => p.name === pkg.name);
+                    const pkgClass = `pkg-${originalIndex % packageColors.length}`;
+                    const val = packageSortValues[pkg.name] || 0;
+                    const isChange = viewMode === ViewMode.percent || viewMode === ViewMode.absoluteChange;
+                    const isRelative = viewMode === ViewMode.relative;
 
-                        const formattedValue = formattedSummaryValue(isRelative, val, viewMode);
+                    const statusClass = summaryStatusClass(isRelative, val, isChange);
 
-                        return (
-                            <div className="stat-summary" key={i}>
-                                <span className={`stat-label ${pkgClass}`}>{pkg.name}</span>
-                                <span className={`stat-value ${statusClass}`}>
-                                    {formattedValue}
-                                </span>
-                            </div>
-                        );
-                    })}
-            </div>
+                    const formattedValue = formattedSummaryValue(isRelative, val, viewMode);
+
+                    return (
+                        <div className="stat-summary" key={i}>
+                            <span className={`stat-label ${pkgClass}`}>{pkg.name}</span>
+                            <span className={`stat-value ${statusClass}`}>
+                                {formattedValue}
+                            </span>
+                        </div>
+                    );
+                })}
+
         </div>
     );
 });
