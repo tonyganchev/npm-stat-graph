@@ -6,6 +6,7 @@
  * LICENSE.md file in the root directory of this source tree.
  */
 
+import { differenceInMonths, differenceInYears, parseISO } from 'date-fns';
 import { AlertCircle, ExternalLink } from 'lucide-react';
 import { lazy, Suspense, useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from 'react';
 import { Else, If, Then } from 'react-if';
@@ -93,6 +94,10 @@ function App() {
     }, [handleSearch, range, customStart, customEnd]);
 
     const visiblePackages = useMemo(() => packages.filter((p) => p.visible && p.name.trim() !== ''), [packages]);
+    const periodStart = parseISO(customStart);
+    const periodEnd = parseISO(customEnd);
+    const canShowMonthlyChart = differenceInMonths(periodEnd, periodStart) >= 1;
+    const canShowYearlyChart = differenceInYears(periodEnd, periodStart) >= 1;
 
     // Use deferred values for charting to keep the autocomplete input snappy
     const deferredPackages = useDeferredValue(packages);
@@ -206,24 +211,28 @@ function App() {
                                                     viewMode={viewMode}
                                                     chartType={chartType}
                                                 />
-                                                <StatChart
-                                                    data={data!}
-                                                    packages={deferredPackages}
-                                                    visiblePackages={deferredVisiblePackages}
-                                                    groupBy="month"
-                                                    enabledDays={enabledDays}
-                                                    viewMode={viewMode}
-                                                    chartType={chartType}
-                                                />
-                                                <StatChart
-                                                    data={data!}
-                                                    packages={deferredPackages}
-                                                    visiblePackages={deferredVisiblePackages}
-                                                    groupBy="year"
-                                                    enabledDays={enabledDays}
-                                                    viewMode={viewMode}
-                                                    chartType={chartType}
-                                                />
+                                                {canShowMonthlyChart && (
+                                                    <StatChart
+                                                        data={data!}
+                                                        packages={deferredPackages}
+                                                        visiblePackages={deferredVisiblePackages}
+                                                        groupBy="month"
+                                                        enabledDays={enabledDays}
+                                                        viewMode={viewMode}
+                                                        chartType={chartType}
+                                                    />
+                                                )}
+                                                {canShowYearlyChart && (
+                                                    <StatChart
+                                                        data={data!}
+                                                        packages={deferredPackages}
+                                                        visiblePackages={deferredVisiblePackages}
+                                                        groupBy="year"
+                                                        enabledDays={enabledDays}
+                                                        viewMode={viewMode}
+                                                        chartType={chartType}
+                                                    />
+                                                )}
                                             </Suspense>
                                         </div>
                                     </Then>
