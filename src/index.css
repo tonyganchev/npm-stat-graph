@@ -261,6 +261,7 @@ input[type="date"] {
 .package-color-indicator {
     z-index: 1;
     width: 4px;
+    min-width: 4px;
     height: 100%;
     min-height: 38px;
     border-radius: 2px;
@@ -787,5 +788,11 @@ a {
         height: 0.55rem;
         border-radius: 50%;
         background-color: currentColor;
+    }
+}
+
+@media (max-width: 400px) {
+    .package-color-indicator {
+        display: none;
     }
 }
