@@ -455,8 +455,16 @@ input[type="date"] {
     text-align: right;
 }
 
+.stat-label-dot {
+    display: none;
+}
+
 .stat-summary-main {
     min-width: var(--chart-summary-min-width);
+}
+
+.stat-summary:not(.stat-summary-main) {
+    margin-left: auto;
 }
 
 .charts-stack {
@@ -749,4 +757,31 @@ a {
 
 .pkg-7 {
     color: var(--pkg8-color)
+}
+
+@media (max-width: 900px) {
+    .stat-summary:not(.stat-summary-main) {
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 0.5rem;
+        white-space: nowrap;
+    }
+
+    .stat-label {
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .stat-label-name {
+        display: none;
+    }
+
+    .stat-label-dot {
+        display: inline-block;
+        width: 0.55rem;
+        height: 0.55rem;
+        border-radius: 50%;
+        background-color: currentColor;
+    }
 }

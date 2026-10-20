@@ -119,14 +119,16 @@ export const ChartHeader = memo(({
 
                     return (
                         <div className="stat-summary" key={i}>
-                            <span className={`stat-label ${pkgClass}`}>{pkg.name}</span>
+                            <span className={`stat-label ${pkgClass}`} title={pkg.name}>
+                                <span className="stat-label-dot" aria-hidden="true" />
+                                <span className="stat-label-name">{pkg.name}</span>
+                            </span>
                             <span className={`stat-value ${statusClass}`}>
                                 {formattedValue}
                             </span>
                         </div>
                     );
                 })}
-
         </div>
     );
 });

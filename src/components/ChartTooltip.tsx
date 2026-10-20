@@ -75,8 +75,9 @@ export const ChartTooltip: FC<ChartTooltipProps> = ({ active, payload, visiblePa
                         return (
                             <Fragment key={pkgId || index}>
                                 <div className="tooltip-row-label">
-                                    <span className={`stat-label ${entry.pkgClass}`}>
-                                        {entry.name + ':'}
+                                    <span className={`stat-label ${entry.pkgClass}`} title={entry.name}>
+                                        <span className="stat-label-dot" aria-hidden="true" />
+                                        <span className="stat-label-name">{entry.name}</span>
                                     </span>
                                 </div>
                                 {Object.entries(viewModeTraits).map(([vm, traits]) => (
