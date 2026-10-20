@@ -94,20 +94,20 @@ export const dateRangeTraits: Record<DateRangeType, DateRangeTraits> = {
         shortLabel: '10y',
         startDateFn: () => subMonths(yesterday, 120),
     },
-    ytd: {
-        label: 'YTD',
-        shortLabel: 'YTD',
-        startDateFn: () => startOfYear(yesterday),
+    wtd: {
+        label: 'WTD',
+        shortLabel: 'WTD',
+        startDateFn: () => startOfWeek(yesterday, { weekStartsOn: 1 }),
     },
     mtd: {
         label: 'MTD',
         shortLabel: 'MTD',
         startDateFn: () => startOfMonth(yesterday),
     },
-    wtd: {
-        label: 'WTD',
-        shortLabel: 'WTD',
-        startDateFn: () => startOfWeek(yesterday, { weekStartsOn: 1 }),
+    ytd: {
+        label: 'YTD',
+        shortLabel: 'YTD',
+        startDateFn: () => startOfYear(yesterday),
     },
     custom: {
         label: 'Custom',
