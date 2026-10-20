@@ -760,6 +760,10 @@ a {
 }
 
 @media (max-width: 900px) {
+    body {
+        padding: 2rem 1rem;
+    }
+
     .stat-summary:not(.stat-summary-main) {
         flex-direction: row;
         align-items: center;
