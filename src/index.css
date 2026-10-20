@@ -330,13 +330,8 @@ input[type="date"] {
         background: var(--bg-gradient) fixed;
         background-color: rgba(15, 23, 42, 0.85);
         backdrop-filter: blur(16px);
-        border-bottom-color: var(--card-border);
-        padding: 1rem 2rem;
-        margin-left: -2rem;
-        margin-right: -2rem;
-        width: calc(100% + 4rem);
+        border-bottom-color: rgba(255, 255, 255, 0.18);
         border-radius: 0;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     }
 }
 

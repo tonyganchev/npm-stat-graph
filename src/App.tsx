@@ -108,7 +108,7 @@ function App() {
 
     useEffect(() => {
         const observer = new IntersectionObserver(
-            ([e]) => setIsSticky(!e.isIntersecting),
+            ([entry]) => setIsSticky(entry.boundingClientRect.top < 0),
             { threshold: [0] },
         );
         const currentSentinel = sentinelRef.current;
